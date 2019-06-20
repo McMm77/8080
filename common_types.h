@@ -11,7 +11,9 @@ typedef unsigned short		uint16_t;
 
 typedef struct memory {
 	size_t memory_size;
+#if dgconfig_DEASSEMBLER
 	int index;
+#endif	
 	uint8_t* memory;
 } memory_t;
 
