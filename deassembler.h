@@ -13,6 +13,7 @@ typedef unsigned char 	uint8_t;
 typedef unsigned short 	uint16_t;
 typedef unsigned long 	uint32_t;
 
+void dissamble_curr_instr(memory_t* rom, int offset);
 void dissamble(memory_t* rom);
 
 #endif /* __DEASSEMBLER_H__ */
