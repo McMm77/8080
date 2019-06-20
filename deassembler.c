@@ -1,6 +1,8 @@
 #include "deassembler.h"
 
-memory_t rom_memory = {0, 0, NULL};
+#ifdef dgconfig_DEASSEMBLER
+	memory_t rom_memory = {0, 0, NULL};
+#endif
 
 static const char* mov_instr(memory_t*, int*);
 static const char* ora_instr(memory_t*, int*);
@@ -1175,6 +1177,14 @@ static const char* cpi_instr(memory_t* rom, int* offset)
 static void print_dissambled_code(const char* instr)
 {
 	printf("%s\n", instr);
+}
+
+void dissamble_curr_instr(memory_t* rom, int offset)
+{
+	int opcode = rom->memory[offset];
+
+	const char* instr = (assembly_instr[opcode](rom, &offset));
+	print_dissambled_code(instr);
 }
 
 void dissamble(memory_t* rom)

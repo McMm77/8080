@@ -1,4 +1,5 @@
 #include "cpu.h"
+#include "deassembler.h"
 
 typedef unsigned long uint32_t;
 
@@ -473,6 +474,8 @@ void execute_cpu(memory_t* ram, memory_t* rom)   {
 
 		if(cpu.is_running == 1)
 		{
+			dissamble_curr_instr(rom, cpu.core.pc);
+
 			uint16_t opcode  = rom->memory[cpu.core.pc];
 
 			(*assembly_instr[opcode])(ram, rom, &cpu);
