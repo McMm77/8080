@@ -183,7 +183,9 @@ OPCODE_FUNC(daa_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 //                 NOP INSTRUCTIONS
 // ---------------------------------------------------------------
 OPCODE_FUNC(nop_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	INCR_PC_CNT(cpu);
+}
 
 // ---------------------------------------------------------------
 //                 DATA TRANSFER INSTRUCTIONS
