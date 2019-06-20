@@ -50,14 +50,14 @@ static void display_curr_cpu_status(cpu_core_t* core)
 	printf("Reg C: 0x%02x\t\tReg D 0x%02x\n", core->c, core->d);
 	printf("Reg E: 0x%02x\t\tReg H 0x%02x\n", core->e, core->h);
 	printf("Reg L: 0x%02x\t\tReg M 0x%02x\n", core->l, core->m);
-	printf("Status: C: %d P: %d AC: %d z: %d s: %d\n", core->status.c, core->status.p, core->status.z, core->status.s);
+	printf("Status: C: %d P: %d AC: %d z: %d s: %d\n", core->status.c, core->status.p, core->status.ac, core->status.z, core->status.s);
         printf("----------------------------\n");	
 
 }
 
 extern void dissamble_curr_instr(memory_t*, int);
 
-static cpu_model_t	cpu = {{0}};
+static cpu_model_t	cpu = {0};
 
 static void mov_instr(memory_t*, memory_t*, cpu_model_t*);
 static void ora_instr(memory_t*, memory_t*, cpu_model_t*);
@@ -189,11 +189,11 @@ static uint8_t pull_from_stack(cpu_model_t* cpu)
 	return 0;
 }
 
-static void push_to_memory(cpu_model_t* cpu, uint16_t addr, uint8_t val)
+static void push_to_memory(memory_t* ram, cpu_model_t* cpu, uint16_t addr, uint8_t val)
 {
 }
 
-static uint8_t pull_from_memory(cpu_model_t* cpu, uint16_t addr)
+static uint8_t pull_from_memory(memory_t* ram, cpu_model_t* cpu, uint16_t addr)
 {
 	return 0;
 }
@@ -399,10 +399,54 @@ OPCODE_FUNC(push_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 {}
 
 OPCODE_FUNC(pop_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+
+	switch(opcode)
+	{
+	}
+
+}
+
+void dad_common_instr(uint16_t* hl, uint16_t* ot, cpu_model_t* cpu)
+{
+	uint32_t res = *hl + *ot;
+
+	cpu->core.status.c = (res & 0x00010000) ? 1 : 0;
+
+	*hl = (uint16_t) res & 0x0000FFFF;
+}
 
 OPCODE_FUNC(dad_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+	uint16_t hl_reg = cpu->core.h << 8 | cpu->core.l;
+	uint16_t ot_reg = 0;
+
+	switch(opcode)
+	{
+		case 0x09:
+			ot_reg = cpu->core.b << 8 | cpu->core.c;
+			break;
+
+		case 0x19:
+			ot_reg = cpu->core.d << 8 | cpu->core.e;
+			break;
+
+		case 0x29:
+			ot_reg = hl_reg;
+			break;
+
+		case 0x39:
+			ot_reg = cpu->core.stack;
+			break;
+	}
+
+	dad_common_instr(&hl_reg, &ot_reg, cpu);
+
+	cpu->core.h = (hl_reg >> 8) & 0x00FF;
+	cpu->core.l = (hl_reg >> 0) & 0x00FF;
+}
 
 OPCODE_FUNC(inx_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 {
@@ -453,14 +497,41 @@ OPCODE_FUNC(dcx_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 	INCR_PC_CNT(cpu);
 }
 
+static void exchange_registers(uint8_t* left, uint8_t* right)
+{
+	uint8_t temp_reg = *left;
+	*left = temp_reg;
+	*right = *left;
+}
+
 OPCODE_FUNC(xchg_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	exchange_registers(&cpu->core.h, &cpu->core.d);
+	exchange_registers(&cpu->core.l, &cpu->core.e);
+
+	INCR_PC_CNT(cpu);
+}
 
 OPCODE_FUNC(xthl_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t msb = pull_from_memory(ram, cpu, cpu->core.stack);
+        uint8_t lsb = pull_from_memory(ram, cpu, cpu->core.stack+1);
+
+	exchange_registers(&msb, &cpu->core.h);
+	exchange_registers(&lsb, &cpu->core.l);
+
+	push_to_memory(ram, cpu, cpu->core.stack, msb);
+	push_to_memory(ram, cpu, cpu->core.stack+1, lsb);
+
+	INCR_PC_CNT(cpu);	
+}
 
 OPCODE_FUNC(sphl_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	cpu->core.stack = cpu->core.h << 8 & cpu->core.l;
+
+	INCR_PC_CNT(cpu);
+}
 // ---------------------------------------------------------------
 //              IMMEDIATE INSTRUCTIONS
 // ---------------------------------------------------------------
