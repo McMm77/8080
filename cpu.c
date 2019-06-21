@@ -159,10 +159,16 @@ void display_cpu_status(cpu_model_t *cpu)
 //                 CARRY BIT INSTRUCTIONS
 // ---------------------------------------------------------------
 OPCODE_FUNC(cmc_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	cpu->core.status.bits.c = (cpu->core.status.bits.c == 0) ? 1 : 0;
+	INCR_PC_CNT(cpu);
+}
 
 OPCODE_FUNC(stc_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	cpu->core.status.bits.c = 1;
+	INCR_PC_CNT(cpu);
+}
 
 // ---------------------------------------------------------------
 //                 SINGLE REGISTER INSTRUCTIONS
