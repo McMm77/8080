@@ -10,39 +10,6 @@ typedef unsigned long uint32_t;
 #define INCR_PC_X_CNT(cpu_ptr, x)   (cpu_ptr->core.pc += x)
 #define SET_PC_CNT(cpu_ptr, x)      (cpu_ptr->core.pc = x)
 
-typedef struct status_reg {
-
-	int c       : 1;
-	int pad_1   : 1;
-	int p       : 1;
-	int pad_2   : 1;
-	int ac      : 1;
-	int pad_3   : 1;
-	int z       : 1;
-	int s       : 1;
-
-} status_reg_t;
-
-typedef struct cpu_core {
-	uint8_t a;
-	uint8_t b;
-	uint8_t c;
-	uint8_t d;
-	uint8_t e;
-	uint8_t h;
-	uint8_t l;
-	uint8_t m;
-	
-	uint16_t stack;
-	uint16_t pc;
-	status_reg_t status;
-	
-} cpu_core_t;
-
-typedef struct cpu_model {
-	uint8_t		is_running;
-	cpu_core_t	core;
-} cpu_model_t;	
 
 
 static cpu_model_t	cpu = {0};
