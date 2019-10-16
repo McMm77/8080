@@ -40,6 +40,8 @@ typedef struct cpu_model {
 } cpu_model_t;	
 
 
+void reset_cpu();
+
 void execute_cpu(memory_t*, memory_t*);
 
 /* ---------------------------------------
