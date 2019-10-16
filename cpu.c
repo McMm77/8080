@@ -480,8 +480,16 @@ OPCODE_FUNC(hlt_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 {}
 
 // -----------------------------------------------------------------------------------
+void reset_cpu()
+{
+	cpu.is_running = 0;
+	memset(&cpu.core, 0, sizeof(cpu_core_t));
+}
+
+// -----------------------------------------------------------------------------------
 void execute_cpu(memory_t* ram, memory_t* rom)   {
 
+	cpu.is_running = 1;
 	while(rom->memory_size > cpu.core.pc)   {
 
 		if(cpu.is_running == 1)
