@@ -164,10 +164,54 @@ OPCODE_FUNC(stc_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 //                 SINGLE REGISTER INSTRUCTIONS
 // ---------------------------------------------------------------
 OPCODE_FUNC(inr_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+	uint8_t *reg = common_func_get_reg(cpu, opcode);
+
+	if (reg == &cpu->core.m) {
+		uint16_t addr = (cpu->core.h << 8) | cpu->core.l;
+		uint16_t val = ram->memory[addr]++;
+
+		common_func_mem_zero_status_bit(cpu, val);
+		common_func_mem_parity_status_bit(cpu, val);
+		common_func_mem_sign_status_bit(cpu, val);
+
+	}
+
+	else {
+		(*reg)++;
+		common_func_reg_zero_status_bit(cpu, *reg);
+		common_func_reg_parity_status_bit(cpu, *reg);
+		common_func_reg_sign_status_bit(cpu, *reg);
+	}
+
+	INCR_PC_CNT(cpu);
+}
 
 OPCODE_FUNC(dcr_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+	uint8_t *reg = common_func_get_reg(cpu, opcode);
+
+	if (reg == &cpu->core.m) {
+		uint16_t addr = (cpu->core.h << 8) | cpu->core.l;
+		uint16_t val = ram->memory[addr]--;
+
+		common_func_mem_zero_status_bit(cpu, val);
+		common_func_mem_parity_status_bit(cpu, val);
+		common_func_mem_sign_status_bit(cpu, val);
+
+	}
+
+	else {
+		*reg--;
+		common_func_reg_zero_status_bit(cpu, *reg);
+		common_func_reg_parity_status_bit(cpu, *reg);
+		common_func_reg_sign_status_bit(cpu, *reg);
+	}
+
+	INCR_PC_CNT(cpu);
+}
 
 OPCODE_FUNC(cma_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 {}
