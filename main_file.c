@@ -82,6 +82,7 @@ static void enter_cli()
 {
 	uint8_t bLoop = 0;
 
+	cpu_model_t cpu = {0};
 	rom_memory.memory = malloc(4);
 	rom_memory.memory_size = 0;
 
@@ -91,27 +92,33 @@ static void enter_cli()
 		printf("Assembly Code << ");
 		int ret = scanf(" %[^\n]s", str);
 
+		execute_cmd(get_cmd(str), str, &cpu);
+
 		if (get_opcode(&rom_memory, str)) {
-			execute_cpu(&ram_memory, &rom_memory);
+			execute_single_cpu_cycle(&ram_memory, &rom_memory, &cpu);
 		}
 	}
 }
 
 static void enter_bin(char* rom_file)
 {
+	cpu_model_t cpu = {0};
+	
 	if(load_rom_memory_from_file(rom_file, &rom_memory) != 0)   {
 		exit(0);
 	}
 
-	execute_cpu(&ram_memory, &rom_memory);
+	execute_cpu(&ram_memory, &rom_memory, &cpu);
 }
 
 static void enter_test_image() {
 
+	cpu_model_t cpu = {0};
+
 	create_ram_memory();
 	create_test_rom_image(&rom_memory);
 
-	execute_cpu(&ram_memory, &rom_memory);
+	execute_cpu(&ram_memory, &rom_memory, &cpu);
 }
 
 static void execute_code(char exec, int argc, char* argv[])
