@@ -79,6 +79,34 @@ static bool get_opcode(memory_t* mem, char* ass_code)
 	return 1;
 }
 
+static void write_to_reg(char *str, cpu_model_t *cpu)
+{
+	char *tok = strtok(NULL, " ");
+}
+
+static void write_to_ram(char *str, cpu_model_t *cpu)
+{
+}
+
+static void opcode_cmd(char *str, cpu_model_t *cpu)
+{
+}
+
+static void execute_cmd(cmd_type_t cmd, char *str, cpu_model_t *cpu)
+{
+	switch(cmd) {
+		case e_write_reg_cmd:
+			write_to_reg(str, cpu);
+			break;
+		case e_write_ram_cmd:
+			write_to_ram(str, cpu);
+			break;
+		case e_opcode_cmd:
+			opcode_cmd(str, cpu);
+			break;
+	}
+}
+
 static void enter_cli()
 {
 	uint8_t bLoop = 0;
@@ -92,6 +120,8 @@ static void enter_cli()
 
 		printf("Assembly Code << ");
 		int ret = scanf(" %[^\n]s", str);
+
+		execute_cmd(get_cmd(str), str, &cpu);
 	}
 }
 
