@@ -81,7 +81,12 @@ static bool get_opcode(memory_t* mem, char* ass_code)
 
 static void write_to_reg(char *str, cpu_model_t *cpu)
 {
-	char *tok = strtok(NULL, " ");
+	char *reg = strtok(NULL, " ");
+	char *val = strtok(NULL, " ");
+
+	uint8_t reg_val = (uint8_t) atoi(val);
+
+	cpu_set_reg_value(cpu, *reg, reg_val);
 }
 
 static void write_to_ram(char *str, cpu_model_t *cpu)
@@ -90,6 +95,12 @@ static void write_to_ram(char *str, cpu_model_t *cpu)
 
 static void opcode_cmd(char *str, cpu_model_t *cpu)
 {
+	parse_opcode_cmd(NULL, str);
+}
+
+static void show_cpu_state(cpu_model_t *cpu)
+{
+	display_cpu_status(cpu);
 }
 
 static void execute_cmd(cmd_type_t cmd, char *str, cpu_model_t *cpu)
@@ -100,6 +111,9 @@ static void execute_cmd(cmd_type_t cmd, char *str, cpu_model_t *cpu)
 			break;
 		case e_write_ram_cmd:
 			write_to_ram(str, cpu);
+			break;
+		case e_show_cpu_state_cmd:
+			show_cpu_state(cpu);
 			break;
 		case e_opcode_cmd:
 			opcode_cmd(str, cpu);
