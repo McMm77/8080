@@ -92,12 +92,6 @@ static void enter_cli()
 
 		printf("Assembly Code << ");
 		int ret = scanf(" %[^\n]s", str);
-
-		execute_cmd(get_cmd(str), str, &cpu);
-
-		if (get_opcode(&rom_memory, str)) {
-			execute_single_cpu_cycle(&ram_memory, &rom_memory, &cpu);
-		}
 	}
 }
 
