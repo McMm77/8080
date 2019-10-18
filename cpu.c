@@ -7,10 +7,6 @@ typedef unsigned long uint32_t;
 #define OPCODE_FUNC(a)		static void a
 #define INCR_PC_CNT(cpu_ptr)	(cpu_ptr->core.pc++)
 
-
-
-static cpu_model_t	cpu = {0};
-
 static void mov_instr(memory_t*, memory_t*, cpu_model_t*);
 static void ora_instr(memory_t*, memory_t*, cpu_model_t*);
 static void rz_instr(memory_t*, memory_t*, cpu_model_t*);
@@ -141,7 +137,7 @@ static void display_curr_cpu_status(cpu_core_t* core)
 	printf("Reg C: 0x%02x\t\tReg D 0x%02x\n", core->c, core->d);
 	printf("Reg E: 0x%02x\t\tReg H 0x%02x\n", core->e, core->h);
 	printf("Reg L: 0x%02x\t\tReg M 0x%02x\n", core->l, core->m);
-	printf("Status: C: %d P: %d AC: %d z: %d s: %d\n", core->status.c, core->status.p, core->status.ac, core->status.z, core->status.s);
+	printf("Status: C: %u P: %uc AC: %u z: %u s: %u\n", core->status.c, (unsigned int ) core->status.p, core->status.ac, core->status.z, core->status.s);
         printf("----------------------------\n");	
 }
 
@@ -480,27 +476,100 @@ OPCODE_FUNC(hlt_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 {}
 
 // -----------------------------------------------------------------------------------
-void reset_cpu()
+void reset_cpu(cpu_model_t *cpu_8080)
 {
-	cpu.is_running = 0;
-	memset(&cpu.core, 0, sizeof(cpu_core_t));
+	cpu_8080->is_running = 0;
+	memset(&cpu_8080->core, 0, sizeof(cpu_core_t));
+}
+
+uint8_t cpu_get_reg_value(cpu_model_t *cpu_8080, char reg)
+{
+	switch (reg) {
+		case 'a':
+			reg = cpu_8080->core.a;
+			break;
+		case 'b':
+			reg = cpu_8080->core.b;
+			break;
+		case 'c':
+			reg = cpu_8080->core.c;
+			break;
+		case 'd':
+			reg = cpu_8080->core.d;
+			break;
+		case 'e':
+			reg = cpu_8080->core.e;
+			break;
+		case 'h':
+			reg = cpu_8080->core.h;
+			break;
+		case 'l':
+			reg = cpu_8080->core.l;
+			break;
+		case 'm':
+			reg = cpu_8080->core.m;
+			break;
+	}
+
+	return reg;
 }
 
 // -----------------------------------------------------------------------------------
-void execute_cpu(memory_t* ram, memory_t* rom)   {
+void cpu_set_reg_value(cpu_model_t *cpu_8080, char reg, uint8_t val)
+{
+	switch (reg) {
+		case 'a':
+			cpu_8080->core.a = val;
+			break;
+		case 'b':
+			cpu_8080->core.b = val;
+			break;
+		case 'c':
+			cpu_8080->core.c = val;
+			break;
+		case 'd':
+			cpu_8080->core.d = val;
+			break;
+		case 'e':
+			cpu_8080->core.e = val;
+			break;
+		case 'h':
+			cpu_8080->core.h = val;
+			break;
+		case 'l':
+			cpu_8080->core.l = val;
+			break;
+		case 'm':
+			cpu_8080->core.m = val;
+			break;
+	}
+}
 
-	cpu.is_running = 1;
-	while(rom->memory_size > cpu.core.pc)   {
 
-		if(cpu.is_running == 1)
+// -----------------------------------------------------------------------------------
+void execute_single_cpu_cycle(memory_t* ram, memory_t* rom, cpu_model_t* cpu_8080)
+{
+	uint16_t opcode = rom->memory[0];
+
+	(*assembly_instr[opcode])(ram, rom, cpu_8080);
+
+	display_curr_cpu_status(&cpu_8080->core);
+}
+
+// -----------------------------------------------------------------------------------
+void execute_cpu(memory_t* ram, memory_t* rom, cpu_model_t* cpu_8080)   {
+
+	while(rom->memory_size > cpu_8080->core.pc)   {
+
+		if(cpu_8080->is_running == 1)
 		{
-			dissamble_curr_instr(rom, cpu.core.pc);
+			dissamble_curr_instr(rom, cpu_8080->core.pc);
 
-			uint16_t opcode  = rom->memory[cpu.core.pc];
+			uint16_t opcode  = rom->memory[cpu_8080->core.pc];
 
-			(*assembly_instr[opcode])(ram, rom, &cpu);
+			(*assembly_instr[opcode])(ram, rom, cpu_8080);
 		}
 
-		display_curr_cpu_status(&cpu.core);	
+		display_curr_cpu_status(&cpu_8080->core);	
 	}
 }
