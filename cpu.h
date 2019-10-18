@@ -40,9 +40,25 @@ typedef struct cpu_model {
 } cpu_model_t;	
 
 
-void reset_cpu();
+/* ---------------------------------------
+ * Sets a reg value
+ */
+void cpu_set_reg_value(cpu_model_t*, char, uint8_t);
 
-void execute_cpu(memory_t*, memory_t*);
+/* ---------------------------------------
+ * Reset the CPU
+ */
+void reset_cpu(cpu_model_t*);
+
+/* ---------------------------------------
+ * Executes a single instruction
+ */
+void execute_single_cpu_cycle(memory_t*, memory_t*, cpu_model_t*);
+
+/* ---------------------------------------
+ * executes a program 
+ */
+void execute_cpu(memory_t*, memory_t*, cpu_model_t*);
 
 /* ---------------------------------------
  * Returns pointer to the register
