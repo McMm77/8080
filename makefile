@@ -3,7 +3,7 @@ FLAGS=-g -I/usr/include/lua5.3/
 DEASM_FLAGS=-g -Ddgconfig_DEASSEMBLER
 DEASM_OBJ=deassembler_main.o deassembler.o
 EMMU_FLAGS=-g
-EMMU_OBJ=main_file.o cpu.o cpu_common.o deassembler_emu.o
+EMMU_OBJ=main_file.o cpu.o cpu_common.o deassembler_emu.o cli_parser.o
 
 emulator: $(EMMU_OBJ)
 	$(CC) -o emulator $(EMMU_OBJ)
@@ -16,6 +16,10 @@ main_file.o: main_file.c
 
 cpu_common.o: cpu_common.c
 	$(CC) -c $(EMMU_FLAGS) cpu_common.c
+
+cli_parser.o: cli_parser.c
+	$(CC) -c $(EMMU_FLAGS) cli_parser.c
+
 cpu.o: cpu.c
 	$(CC) -c $(EMMU_FLAGS) cpu.c
 

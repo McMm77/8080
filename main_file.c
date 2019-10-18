@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "cpu.h"
+#include "cli_parser.h"
 
 #define EMULATOR_VERSION_MAJOR		0
 #define EMULATOR_VERSION_MINOR		1
