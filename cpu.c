@@ -236,10 +236,32 @@ OPCODE_FUNC(mov_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 {}
 
 OPCODE_FUNC(stax_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+	uint16_t address = 0x00;
+
+	if (opcode == 0x02) {
+		address = cpu->core.b << 8 | cpu->core.c;
+	} else {
+		address = cpu->core.d << 8 | cpu->core.e;
+	}
+
+	ram->memory[address] = cpu->core.accumulator;
+}
 
 OPCODE_FUNC(ldax_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+	uint16_t address = 0x00;
+
+	if (opcode == 0x0A) {
+		address = cpu->core.b << 8 | cpu->core.c;
+	} else {
+		address = cpu->core.d << 8 | cpu->core.e;
+	}
+
+	cpu->core.accumulator = ram->memory[address];
+}
 
 // ---------------------------------------------------------------
 //        REGISTER OR MEMORY TO ACCUMULATOR INSTRUCTIONS
@@ -558,8 +580,6 @@ void execute_single_cpu_cycle(memory_t* ram, memory_t* rom, cpu_model_t* cpu_808
 	uint16_t opcode = rom->memory[0];
 
 	(*assembly_instr[opcode])(ram, rom, cpu_8080);
-
-	display_curr_cpu_status(&cpu_8080->core);
 }
 
 // -----------------------------------------------------------------------------------
