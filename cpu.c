@@ -133,6 +133,7 @@ static void display_curr_cpu_status(cpu_core_t* core)
 	printf("------ CPU STATUS --------\n");
 	printf("Stack: %d\n", core->stack);
 	printf("PC: %d\n", core->pc);
+	printf("Accumulator: %d\n", core->accumulator);
 	printf("Reg A: 0x%02x\t\tReg B 0x%02x\n", core->a, core->b);
 	printf("Reg C: 0x%02x\t\tReg D 0x%02x\n", core->c, core->d);
 	printf("Reg E: 0x%02x\t\tReg H 0x%02x\n", core->e, core->h);
@@ -318,7 +319,13 @@ OPCODE_FUNC(dad_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 {}
 
 OPCODE_FUNC(inx_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+
+	switch (opcode) {
+
+	printf("INX Command\n");
+}
 
 OPCODE_FUNC(dcx_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 {}
@@ -570,6 +577,8 @@ void cpu_set_reg_value(cpu_model_t *cpu_8080, char reg, uint8_t val)
 		case 'm':
 			cpu_8080->core.m = val;
 			break;
+		case 'z':
+			cpu_8080->core.accumulator = val;
 	}
 }
 
