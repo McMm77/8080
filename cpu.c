@@ -613,17 +613,51 @@ OPCODE_FUNC(lxi_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 // ---------------------------------------------------------------
 // 		DIRECT ADDRESSING INSTRUCTIONS
 // ---------------------------------------------------------------
+static uint16_t get_direct_address_from_mem(memory_t *mem, cpu_model_t *cpu)
+{
+	uint8_t laddr = mem->memory[cpu->core.pc+1];
+	uint8_t haddr = mem->memory[cpu->core.pc+2];
+
+	return ((haddr << 8) | laddr);
+}
+
 OPCODE_FUNC(sta_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint16_t addr = get_direct_address_from_mem(rom, cpu); 
+
+	ram->memory[addr] = cpu->core.a;
+
+	INCR_PC_X_CNT(cpu, 3);
+}
 
 OPCODE_FUNC(lda_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint16_t addr = get_direct_address_from_mem(rom, cpu); 
+
+	cpu->core.a = ram->memory[addr];
+
+	INCR_PC_X_CNT(cpu, 3);
+}
 
 OPCODE_FUNC(shld_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint16_t addr = get_direct_address_from_mem(rom, cpu); 
+
+	ram->memory[addr] = cpu->core.l;
+	ram->memory[addr +1] = cpu->core.h;
+
+	INCR_PC_X_CNT(cpu, 3);
+}
 
 OPCODE_FUNC(lhld_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint16_t addr = get_direct_address_from_mem(rom, cpu); 
+
+	cpu->core.l = ram->memory[addr];
+	cpu->core.h = ram->memory[addr+1];
+
+	INCR_PC_X_CNT(cpu, 3);
+}
 
 // ---------------------------------------------------------------
 // 		JUMP INSTRUCTIONS
