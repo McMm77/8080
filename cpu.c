@@ -751,6 +751,11 @@ void reset_cpu(cpu_model_t *cpu_8080)
 	memset(&cpu_8080->core, 0, sizeof(cpu_core_t));
 }
 
+void cpu_set_accumulator_value(cpu_model_t *cpu_8080, uint8_t val)
+{
+	cpu_8080->core.accumulator = val;
+}
+
 uint8_t cpu_get_reg_value(cpu_model_t *cpu_8080, char reg)
 {
 	switch (reg) {

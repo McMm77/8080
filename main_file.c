@@ -110,6 +110,16 @@ static void show_cpu_state(cpu_model_t *cpu)
 	display_cpu_status(cpu);
 }
 
+static void write_accumulator(char *str, cpu_model_t *cpu)
+{
+	char *cmd = strtok(str, " ");
+	char *val = strtok(NULL, " ");
+
+	uint8_t reg_val = (uint8_t) atoi(val);
+
+	cpu_set_accumulator_value(cpu, reg_val);
+}	
+
 static void execute_cmd(cmd_type_t cmd, char *str, cpu_model_t *cpu, memory_t* rom)
 {
 	switch(cmd) {
@@ -121,6 +131,9 @@ static void execute_cmd(cmd_type_t cmd, char *str, cpu_model_t *cpu, memory_t* r
 			break;
 		case e_show_cpu_state_cmd:
 			show_cpu_state(cpu);
+			break;
+		case e_write_accumulator_cmd:
+			write_accumulator(str, cpu);
 			break;
 		case e_opcode_cmd:
 			opcode_cmd(str, cpu, rom);
