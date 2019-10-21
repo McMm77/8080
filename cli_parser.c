@@ -2,15 +2,15 @@
 #include <stdio.h>
 #include "cli_parser.h"
 #include "cpu.h"
-<<<<<<< HEAD
-=======
 #include "simple_assembler.h"
 #include <string.h>
 #include <ctype.h>
->>>>>>> e9475a4... fixup! emulator_8080: add cli parser
 
-void parse_opcode_cmd(memory_t *rom, char *cmd)
+bool parse_opcode_cmd(memory_t *rom, char *cmd)
 {
+	bool is_valid_cmd = assemble(rom, cmd);
+
+	return is_valid_cmd;
 }
 
 void parse_get_reg_cmd(char *cmd)

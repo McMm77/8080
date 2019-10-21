@@ -14,7 +14,7 @@ typedef enum cmd_type {
 } cmd_type_t;
 
 cmd_type_t get_cmd(char *cmd);
-void parse_opcode_cmd(memory_t *rom, char *cmd);
+bool parse_opcode_cmd(memory_t *rom, char *cmd);
 void parse_get_reg_cmd(char *cmd);
 void parse_get_ram_cmd(char *cmd);
 

@@ -88,13 +88,23 @@ static void write_to_ram(char *str, cpu_model_t *cpu)
 {
 }
 
-static void opcode_cmd(char *str, cpu_model_t *cpu)
+static void opcode_cmd(char *str, cpu_model_t *cpu, memory_t *rom)
+{
+	if (parse_opcode_cmd(rom, str) == true) {
+		execute_single_cpu_cycle(&ram_memory, rom, cpu);
+	}
+
+	else {
+		printf("Unrecognizable assembly command\n");
+	}
+}
+
 static void show_cpu_state(cpu_model_t *cpu)
 {
 	display_cpu_status(cpu);
 }
 
-static void execute_cmd(cmd_type_t cmd, char *str, cpu_model_t *cpu)
+static void execute_cmd(cmd_type_t cmd, char *str, cpu_model_t *cpu, memory_t* rom)
 {
 	switch(cmd) {
 		case e_write_reg_cmd:
@@ -107,7 +117,7 @@ static void execute_cmd(cmd_type_t cmd, char *str, cpu_model_t *cpu)
 			show_cpu_state(cpu);
 			break;
 		case e_opcode_cmd:
-			opcode_cmd(str, cpu);
+			opcode_cmd(str, cpu, rom);
 			break;
 	}
 }
@@ -126,7 +136,7 @@ static void enter_cli()
 		printf("Assembly Code << ");
 		int ret = scanf(" %[^\n]s", str);
 
-		execute_cmd(get_cmd(str), str, &cpu);
+		execute_cmd(get_cmd(str), str, &cpu, &rom_memory);
 	}
 }
 
