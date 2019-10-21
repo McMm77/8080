@@ -260,13 +260,249 @@ OPCODE_FUNC(nop_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 //                 DATA TRANSFER INSTRUCTIONS
 // ---------------------------------------------------------------
 OPCODE_FUNC(mov_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+	uint16_t addr = 0x00;
+
+	switch(opcode) {
+		case 0x40:
+			break;
+		case 0x41:
+			cpu->core.b = cpu->core.c;
+			break;
+		case 0x42:
+			cpu->core.b = cpu->core.d;
+			break;
+		case 0x43:
+			cpu->core.b = cpu->core.e;
+			break;
+		case 0x44:
+			cpu->core.b = cpu->core.h;
+			break;
+		case 0x45:
+			cpu->core.b = cpu->core.l;
+			break;
+		case 0x46:
+			addr = (cpu->core.h << 8) | cpu->core.l;
+			cpu->core.b = ram->memory[addr];
+			break;
+		case 0x47:
+			cpu->core.b = cpu->core.a;
+			break;
+		case 0x48:
+			cpu->core.c = cpu->core.b;
+			break;
+		case 0x49:
+			break;
+		case 0x4A:
+			cpu->core.c = cpu->core.d;
+			break;
+		case 0x4B:
+			cpu->core.c = cpu->core.e;
+			break;
+		case 0x4C:
+			cpu->core.c = cpu->core.h;
+			break;
+		case 0x4D:
+			cpu->core.c = cpu->core.l;
+			break;
+		case 0x4E:
+			addr = (cpu->core.h << 8) | cpu->core.l;
+			cpu->core.c = ram->memory[addr];
+			break;
+		case 0x4F:
+			cpu->core.c = cpu->core.a;
+			break;
+		case 0x50:
+			cpu->core.d = cpu->core.b;
+			break;
+		case 0x51:
+			cpu->core.d = cpu->core.c;
+			break;
+		case 0x52:
+			cpu->core.d = cpu->core.d;
+			break;
+		case 0x53:
+			cpu->core.d = cpu->core.e;
+			break;
+		case 0x54:
+			cpu->core.d = cpu->core.h;
+			break;
+		case 0x55:
+			cpu->core.d = cpu->core.l;
+			break;
+		case 0x56:
+			addr = (cpu->core.h << 8) | cpu->core.l;
+			cpu->core.d = ram->memory[addr];
+			break;
+		case 0x57:
+			cpu->core.d = cpu->core.a;
+			break;
+		case 0x58:
+			cpu->core.e = cpu->core.b;
+			break;
+		case 0x59:
+			cpu->core.e = cpu->core.c;
+			break;
+		case 0x5A:
+			cpu->core.e = cpu->core.d;
+			break;
+		case 0x5B:
+			cpu->core.e = cpu->core.e;
+			break;
+		case 0x5C:
+			cpu->core.e = cpu->core.h;
+			break;
+		case 0x5D:
+			cpu->core.e = cpu->core.l;
+			break;
+		case 0x5E:
+			addr = (cpu->core.h << 8) | cpu->core.l;
+			cpu->core.e = ram->memory[addr];
+			break;
+		case 0x5F:
+			cpu->core.e = cpu->core.a;
+			break;
+		case 0x60:
+			cpu->core.h = cpu->core.b;
+			break;
+		case 0x61:
+			cpu->core.h = cpu->core.c;
+			break;
+		case 0x62:
+			cpu->core.h = cpu->core.d;
+			break;
+		case 0x63:
+			cpu->core.h = cpu->core.e;
+			break;
+		case 0x64:
+			cpu->core.h = cpu->core.h;
+			break;
+		case 0x65:
+			cpu->core.h = cpu->core.l;
+			break;
+		case 0x66:
+			addr = (cpu->core.h << 8) | cpu->core.l;
+			cpu->core.h = ram->memory[addr];
+			break;
+		case 0x67:
+			cpu->core.h = cpu->core.a;
+			break;
+		case 0x68:
+			cpu->core.l = cpu->core.b;
+			break;
+		case 0x69:
+			cpu->core.l = cpu->core.c;
+			break;
+		case 0x6A:
+			cpu->core.l = cpu->core.d;
+			break;
+		case 0x6B:
+			cpu->core.l = cpu->core.e;
+			break;
+		case 0x6C:
+			cpu->core.l = cpu->core.h;
+			break;
+		case 0x6D:
+			cpu->core.l = cpu->core.l;
+			break;
+		case 0x6E:
+			addr = (cpu->core.h << 8) | cpu->core.l;
+			cpu->core.l = ram->memory[addr];
+			break;
+		case 0x6F:
+			cpu->core.l = cpu->core.a;
+			break;
+		case 0x70:
+			addr = (cpu->core.h << 8) | cpu->core.l;
+			ram->memory[addr] = cpu->core.b;
+			break;
+		case 0x71:
+			addr = (cpu->core.h << 8) | cpu->core.l;
+			ram->memory[addr] = cpu->core.c;
+			break;
+		case 0x72:
+			addr = (cpu->core.h << 8) | cpu->core.l;
+			ram->memory[addr] = cpu->core.d;
+			break;
+		case 0x73:
+			addr = (cpu->core.h << 8) | cpu->core.l;
+			ram->memory[addr] = cpu->core.e;
+			break;
+		case 0x74:
+			addr = (cpu->core.h << 8) | cpu->core.l;
+			ram->memory[addr] = cpu->core.h;
+			break;
+		case 0x75:
+			addr = (cpu->core.h << 8) | cpu->core.l;
+			ram->memory[addr] = cpu->core.l;
+			break;
+		case 0x77:
+			addr = (cpu->core.h << 8) | cpu->core.l;
+			ram->memory[addr] = cpu->core.a;
+			break;
+		case 0x78:
+			cpu->core.a = cpu->core.b;
+			break;
+		case 0x79:
+			cpu->core.a = cpu->core.c;
+			break;
+		case 0x7A:
+			cpu->core.a = cpu->core.d;
+			break;
+		case 0x7B:
+			cpu->core.a = cpu->core.e;
+			break;
+		case 0x7C:
+			cpu->core.a = cpu->core.h;
+			break;
+		case 0x7D:
+			cpu->core.a = cpu->core.l;
+			break;
+		case 0x7E:
+			addr = (cpu->core.h << 8) | cpu->core.l;
+			cpu->core.a = ram->memory[addr];
+			break;
+		case 0x7F:
+			cpu->core.a = cpu->core.a;
+			break;
+	
+	}
+
+	INCR_PC_CNT(cpu);
+}
 
 OPCODE_FUNC(stax_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+	uint16_t address = 0x00;
+
+	if (opcode == 0x02) {
+		address = cpu->core.b << 8 | cpu->core.c;
+	} else {
+		address = cpu->core.d << 8 | cpu->core.e;
+	}
+
+	ram->memory[address] = cpu->core.accumulator;
+
+	INCR_PC_CNT(cpu);
+}
 
 OPCODE_FUNC(ldax_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+	uint16_t address = 0x00;
+
+	if (opcode == 0x0A) {
+		address = cpu->core.b << 8 | cpu->core.c;
+	} else {
+		address = cpu->core.d << 8 | cpu->core.e;
+	}
+
+	cpu->core.accumulator = ram->memory[address];
+	
+	INCR_PC_CNT(cpu);
+}
 
 // ---------------------------------------------------------------
 //        REGISTER OR MEMORY TO ACCUMULATOR INSTRUCTIONS
