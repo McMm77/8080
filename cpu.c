@@ -150,6 +150,12 @@ static void display_curr_cpu_status(cpu_core_t* core)
 }
 
 // ---------------------------------------------------------------
+void display_cpu_status(cpu_model_t *cpu)
+{
+	display_curr_cpu_status(&cpu->core);
+}
+
+// ---------------------------------------------------------------
 //                 CARRY BIT INSTRUCTIONS
 // ---------------------------------------------------------------
 OPCODE_FUNC(cmc_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
