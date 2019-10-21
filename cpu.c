@@ -663,34 +663,115 @@ OPCODE_FUNC(lhld_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 // 		JUMP INSTRUCTIONS
 // ---------------------------------------------------------------
 OPCODE_FUNC(pchl_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint16_t pc_counter = (cpu->core.h << 8) | cpu->core.l;
+
+	SET_PC_CNT(cpu, pc_counter);
+}
 
 OPCODE_FUNC(jmp_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint16_t addr = get_direct_address_from_mem(rom, cpu);
+
+	SET_PC_CNT(cpu, addr);
+}
 
 OPCODE_FUNC(jc_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.c == 1) {
+		uint16_t addr = get_direct_address_from_mem(rom, cpu);
+		SET_PC_CNT(cpu, addr);
+	}
+
+	else {
+		INCR_PC_X_CNT(cpu, 3);
+	}
+}
 
 OPCODE_FUNC(jnc_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.c == 0) {
+		uint16_t addr = get_direct_address_from_mem(rom, cpu);
+		SET_PC_CNT(cpu, addr);
+	}
+
+	else {
+		INCR_PC_X_CNT(cpu, 3);
+	}
+}
 
 OPCODE_FUNC(jz_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.status.bits.z == 1) {
+		uint16_t addr = get_direct_address_from_mem(rom, cpu);
+		SET_PC_CNT(cpu, addr);
+	}
+
+	else {
+		INCR_PC_X_CNT(cpu, 3);
+	}
+}
 
 OPCODE_FUNC(jnz_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.status.bits.z == 0) {
+		uint16_t addr = get_direct_address_from_mem(rom, cpu);
+		SET_PC_CNT(cpu, addr);
+	}
+
+	else {
+		INCR_PC_X_CNT(cpu, 3);
+	}
+}
 
 OPCODE_FUNC(jm_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.status.bits.s == 1) {
+		uint16_t addr = get_direct_address_from_mem(rom, cpu);
+		SET_PC_CNT(cpu, addr);
+	}
+
+	else {
+		INCR_PC_X_CNT(cpu, 3);
+	}
+}
 
 OPCODE_FUNC(jp_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.status.bits.s == 0) {
+		uint16_t addr = get_direct_address_from_mem(rom, cpu);
+		SET_PC_CNT(cpu, addr);
+	}
+
+	else {
+		INCR_PC_X_CNT(cpu, 3);
+	}
+}
 
 OPCODE_FUNC(jpe_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.status.bits.p == 1) {
+		uint16_t addr = get_direct_address_from_mem(rom, cpu);
+		SET_PC_CNT(cpu, addr);
+	}
+
+	else {
+		INCR_PC_X_CNT(cpu, 3);
+	}
+
+}
 
 OPCODE_FUNC(jpo_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.status.bits.p == 0) {
+		uint16_t addr = get_direct_address_from_mem(rom, cpu);
+		SET_PC_CNT(cpu, addr);
+	}
+
+	else {
+		INCR_PC_X_CNT(cpu, 3);
+	}
+}
 
 // ---------------------------------------------------------------
 // 		CALL SUBROUTINE INSTRUCTIONS
