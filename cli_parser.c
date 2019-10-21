@@ -2,9 +2,13 @@
 #include <stdio.h>
 #include "cli_parser.h"
 #include "cpu.h"
+#include "simple_assembler.h"
 
-void parse_opcode_cmd(memory_t *rom, char *cmd)
+bool parse_opcode_cmd(memory_t *rom, char *cmd)
 {
+	bool is_valid_cmd = assemble(rom, cmd);
+
+	return is_valid_cmd;
 }
 
 void parse_get_reg_cmd(char *cmd)
