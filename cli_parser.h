@@ -9,6 +9,7 @@ typedef enum cmd_type {
 	e_clear_ram_cmd,
 	e_read_reg_cmd,
 	e_write_reg_cmd,
+	e_show_cpu_state_cmd,
 	e_opcode_cmd
 } cmd_type_t;
 
