@@ -81,7 +81,13 @@ static bool get_opcode(memory_t* mem, char* ass_code)
 
 static void write_to_reg(char *str, cpu_model_t *cpu)
 {
-	char *tok = strtok(NULL, " ");
+	char *cmd = strtok(str, " ");
+	char *reg = strtok(NULL, " ");
+	char *val = strtok(NULL, " ");
+
+	uint8_t reg_val = (uint8_t) atoi(val);
+
+	cpu_set_reg_value(cpu, *reg, reg_val);
 }
 
 static void write_to_ram(char *str, cpu_model_t *cpu)
