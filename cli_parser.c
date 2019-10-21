@@ -49,6 +49,14 @@ cmd_type_t get_cmd(char *cmd)
 		return e_clear_ram_cmd;
 	}
 
+	if (strcmp(tok, "read_acc") == 0) {
+		return e_read_accumulator_cmd;
+	}
+
+	if (strcmp(tok, "write_acc") == 0) {
+		return e_write_accumulator_cmd;
+	}
+
 	return e_opcode_cmd;
 }
 

@@ -42,6 +42,11 @@ typedef struct cpu_model {
 
 
 /* ---------------------------------------
+ * Set the accumulator value
+ */
+void cpu_set_accumulator_value(cpu_model_t*, uint8_t);
+
+/* ---------------------------------------
  * Sets a reg value
  */
 void cpu_set_reg_value(cpu_model_t*, char, uint8_t);
