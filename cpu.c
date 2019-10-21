@@ -746,7 +746,11 @@ OPCODE_FUNC(in_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 // 		HALT INSTRUCTIONS
 // ---------------------------------------------------------------
 OPCODE_FUNC(hlt_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	INCR_PC_CNT(cpu);
+
+	cpu->is_running = 0;
+}
 
 // -----------------------------------------------------------------------------------
 void reset_cpu(cpu_model_t *cpu_8080)
