@@ -47,6 +47,11 @@ typedef struct cpu_model {
 void cpu_set_reg_value(cpu_model_t*, char, uint8_t);
 
 /* ---------------------------------------
+ * Display Current CPU Status
+ */
+void display_cpu_status(cpu_model_t*);
+
+/* ---------------------------------------
  * Reset the CPU
  */
 void reset_cpu(cpu_model_t*);

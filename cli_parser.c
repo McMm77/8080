@@ -17,7 +17,9 @@ void parse_get_ram_cmd(char *cmd)
 
 cmd_type_t get_cmd(char *cmd)
 {
-	char *tok = strtok(cmd, " ");
+	char temp_cmd[80] = {0};
+	strcpy(temp_cmd, cmd);
+	char *tok = strtok(temp_cmd, " ");
 
 	if (strcmp(tok, "wreg") == 0) {
 		return e_write_reg_cmd;
@@ -33,6 +35,10 @@ cmd_type_t get_cmd(char *cmd)
 
 	if (strcmp(tok, "wram") == 0) {
 		return e_write_ram_cmd;
+	}
+
+	if (strcmp(tok, "show") == 0) {
+		return e_show_cpu_state_cmd;
 	}
 
 	if (strcmp(tok, "cram") == 0) {
