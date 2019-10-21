@@ -136,6 +136,7 @@ static void display_curr_cpu_status(cpu_core_t* core)
 	printf("------ CPU STATUS --------\n");
 	printf("Stack: %d\n", core->stack);
 	printf("PC: %d\n", core->pc);
+	printf("Accumulator: %d\n", core->accumulator);
 	printf("Reg A: 0x%02x\t\tReg B 0x%02x\n", core->a, core->b);
 	printf("Reg C: 0x%02x\t\tReg D 0x%02x\n", core->c, core->d);
 	printf("Reg E: 0x%02x\t\tReg H 0x%02x\n", core->e, core->h);

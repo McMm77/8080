@@ -27,7 +27,8 @@ typedef struct cpu_core {
 	uint8_t h;
 	uint8_t l;
 	uint8_t m;
-	
+
+	uint8_t accumulator;	
 	uint16_t stack;
 	uint16_t pc;
 	status_reg_t status;
