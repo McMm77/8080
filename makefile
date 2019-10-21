@@ -34,6 +34,6 @@ deassembler_main.o: deassembler_main.c
 
 clean:
 	rm -rfv *.o
-	rm deassembler
-	rm emulator
+	rm -f deassembler
+	rm -f emulator
 
