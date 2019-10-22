@@ -574,16 +574,50 @@ OPCODE_FUNC(cmp_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 //              ROTATE ACCUMULATOR INSTRUCTIONS
 // ---------------------------------------------------------------
 OPCODE_FUNC(rlc_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t hbit = ((cpu->core.a & 0x80) != 0);
+
+	cpu->core.a <<= 1;
+	cpu->core.a |= hbit;
+	cpu->core.status.bits.c = hbit;
+
+	INCR_PC_CNT(cpu);
+}
 
 OPCODE_FUNC(rrc_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t lbit = ((cpu->core.a & 0x01) != 0);
+
+	cpu->core.a >>= 1;
+	cpu->core.a |= (lbit << 8);
+	cpu->core.status.bits.c = lbit;
+
+	INCR_PC_CNT(cpu);
+}
 
 OPCODE_FUNC(ral_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t hbit = ((cpu->core.a & 0x80) != 0);
+	uint8_t cbit = cpu->core.status.bits.c;
+			
+	cpu->core.a <<= 1;
+	cpu->core.a |= cbit;
+	cpu->core.status.bits.c = hbit;
+
+	INCR_PC_CNT(cpu);
+}
 
 OPCODE_FUNC(rar_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t lbit = ((cpu->core.a & 0x01) != 0);
+	uint8_t cbit = cpu->core.status.bits.c;
+
+	cpu->core.a >>= 1;
+	cpu->core.a |= (cbit << 8);
+	cpu->core.status.bits.c = lbit;
+
+	INCR_PC_CNT(cpu);
+}
 
 // ---------------------------------------------------------------
 //              REGISTER PAIR INSTRUCTIONS
