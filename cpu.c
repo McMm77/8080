@@ -553,29 +553,183 @@ OPCODE_FUNC(rar_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 // ---------------------------------------------------------------
 //              REGISTER PAIR INSTRUCTIONS
 // ---------------------------------------------------------------
+static inline void push_on_the_stack(uint8_t hbit, uint8_t lbit, memory_t *ram, cpu_model_t *cpu)
+{
+	ram->memory[--(cpu->core.stack)] = hbit;
+	ram->memory[--(cpu->core.stack)] = lbit;
+}
+
+static inline void pop_from_the_stack(uint8_t *hbit, uint8_t *lbit, memory_t *ram, cpu_model_t *cpu)
+{
+	*hbit = ram->memory[(cpu->core.stack)++];
+	*lbit = ram->memory[(cpu->core.stack)++];
+}
+
 OPCODE_FUNC(push_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+	switch (opcode) {
+		case 0xC5:
+			push_on_the_stack(cpu->core.b, cpu->core.c, ram, cpu);
+			break;
+		case 0xD5:
+			push_on_the_stack(cpu->core.d, cpu->core.e, ram, cpu);
+			break;
+		case 0xE5:
+			push_on_the_stack(cpu->core.h, cpu->core.l, ram, cpu);
+			break;
+		case 0xF5:
+			push_on_the_stack(cpu->core.a, cpu->core.status.reg, ram, cpu);
+			break;
+	}
+
+	INCR_PC_CNT(cpu);
+}
 
 OPCODE_FUNC(pop_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+
+	switch (opcode) {
+		case 0xC1:
+			pop_from_the_stack(&cpu->core.b, &cpu->core.c, ram, cpu);
+			break;
+		case 0xD1:
+			pop_from_the_stack(&cpu->core.b, &cpu->core.c, ram, cpu);
+			break;
+		case 0xE1:
+			pop_from_the_stack(&cpu->core.h, &cpu->core.l, ram, cpu);
+			break;
+		case 0xF1:
+			pop_from_the_stack(&cpu->core.a, &cpu->core.status.reg, ram, cpu);
+			break;
+	}
+
+	INCR_PC_CNT(cpu);
+}
 
 OPCODE_FUNC(dad_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+	uint16_t hl = (cpu->core.h << 8) | cpu->core.l;
+	uint16_t src = 0;
+	uint32_t prod = 0;
+
+	switch (opcode) {
+		case 0x09:
+			src = (cpu->core.b << 8) | cpu->core.c;
+			prod = hl + src;
+			break;
+		case 0x19:
+			src = (cpu->core.d << 8) | cpu->core.e;
+			prod = hl + src;
+			break;
+		case 0x29:
+			prod = hl << 1;
+			break;
+		case 0x39:
+			prod = hl + cpu->core.stack;
+			break;
+	}
+
+	cpu->core.status.bits.c = (prod & 0x00010000) ? 1 : 0;
+
+	cpu->core.h = (uint8_t) ((prod >> 8) && 0xFF);
+	cpu->core.l = (uint8_t) (prod & 0xFF);
+
+	INCR_PC_CNT(cpu);
+}
+
+static void increase_register_pair(uint8_t *hbit, uint8_t *lbit, cpu_model_t *cpu)
+{
+	uint16_t prod = (*hbit << 8) | *lbit;
+	prod++;
+	
+	*hbit = (prod >> 8) & 0xFF;
+	*lbit = prod & 0xFF;
+}
 
 OPCODE_FUNC(inx_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+	uint16_t prod = 0;
 
-OPCODE_FUNC(dcx_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+	switch (opcode) {
+		case 0x03:
+			increase_register_pair(&cpu->core.b, &cpu->core.c, cpu);
+			break;
+		case 0x13:
+			increase_register_pair(&cpu->core.d, &cpu->core.e, cpu);
+			break;
+		case 0x23:
+			increase_register_pair(&cpu->core.h, &cpu->core.l, cpu);
+			break;
+		case 0x33:
+			cpu->core.stack++;
+			break;
+	}
+
+	INCR_PC_CNT(cpu);
+}
+
+static void decrease_register_pair(uint8_t *hbit, uint8_t *lbit, cpu_model_t *cpu)
+{
+	uint16_t prod = (*hbit << 8) | *lbit;
+	prod--;
+
+	*hbit = (prod >> 8) & 0xFF;
+	*lbit = prod & 0xFF;
+}
+
+OPCODE_FUNC(dcx_instr)(memory_t* ram, memory_t* rom, cpu_model_t *cpu)
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+	uint16_t prod = 0;
+
+	switch (opcode) {
+		case 0x0B:
+			decrease_register_pair(&cpu->core.b, &cpu->core.c, cpu);
+			break;
+		case 0x1B:
+			decrease_register_pair(&cpu->core.d, &cpu->core.e, cpu);
+			break;
+		case 0x2B:
+			decrease_register_pair(&cpu->core.h, &cpu->core.l, cpu);
+			break;
+		case 0x3B:
+			cpu->core.stack--;
+			break;
+	}
+
+	INCR_PC_CNT(cpu);
+}
 
 OPCODE_FUNC(xchg_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t hbit = cpu->core.d;
+	uint8_t lbit = cpu->core.e;
+
+	cpu->core.d = cpu->core.h;
+	cpu->core.e = cpu->core.l;
+	cpu->core.h = hbit;
+	cpu->core.l = lbit;
+
+	INCR_PC_CNT(cpu);
+}
 
 OPCODE_FUNC(xthl_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	ram->memory[cpu->core.stack] = cpu->core.l;
+	ram->memory[cpu->core.stack +1] = cpu->core.h;
+
+	INCR_PC_CNT(cpu);
+}
 
 OPCODE_FUNC(sphl_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	cpu->core.stack = (cpu->core.h << 8) | cpu->core.l;
+	INCR_PC_CNT(cpu);
+}
 
 // ---------------------------------------------------------------
 //              IMMEDIATE INSTRUCTIONS
