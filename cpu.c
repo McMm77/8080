@@ -511,29 +511,409 @@ OPCODE_FUNC(ldax_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 // ---------------------------------------------------------------
 //        REGISTER OR MEMORY TO ACCUMULATOR INSTRUCTIONS
 // ---------------------------------------------------------------
+static void add_register_value(uint8_t reg_val, cpu_model_t *cpu)
+{
+	uint8_t ac_prod = (cpu->core.a & 0x0F) + (reg_val & 0x0F);
+	cpu->core.status.bits.ac = ((ac_prod & 0x10) != 0);
+
+	uint16_t c_prod = cpu->core.a + reg_val;
+	cpu->core.status.bits.c = ((c_prod & 0x0100) != 0);
+
+	cpu->core.a = (uint8_t) (c_prod & 0xFF);
+
+	common_func_reg_zero_status_bit(cpu, cpu->core.a);
+	common_func_reg_parity_status_bit(cpu, cpu->core.a);
+	common_func_reg_sign_status_bit(cpu, cpu->core.a);
+}
+
+static void adc_register_value(uint8_t reg_val, cpu_model_t *cpu)
+{
+	uint8_t cbit = cpu->core.status.bits.c != 0;
+
+	uint8_t ac_res = (cpu->core.a & 0x0F) + (reg_val & 0x0F) + cbit;
+	cpu->core.status.bits.ac = ((ac_res & 0x10) != 0x00);
+
+	uint16_t res = cpu->core.a  + reg_val + cbit;
+	cpu->core.status.bits.c = ((res & 0x0100) != 0x00);
+
+	cpu->core.a = (uint8_t) (res & 0x00FF);
+
+	common_func_reg_zero_status_bit(cpu, cpu->core.a);
+	common_func_reg_parity_status_bit(cpu, cpu->core.a);
+	common_func_reg_sign_status_bit(cpu, cpu->core.a);
+}
+
+static void sbb_register_value(uint8_t reg_val, cpu_model_t *cpu)
+{
+	uint8_t cbit = cpu->core.status.bits.c != 0;
+	uint8_t two_qu = ~(reg_val + cbit) + 1;
+
+	uint8_t ac_res = (cpu->core.a & 0x0F) + (reg_val & 0x0F);
+	cpu->core.status.bits.ac = ((ac_res & 0x10) != 0x00);
+
+	uint16_t c_res = cpu->core.a + two_qu;
+	cpu->core.status.bits.c = ((c_res & 0x0100) != 0x00);
+
+	cpu->core.a = (uint8_t) (c_res & 0x00FF);
+
+	common_func_reg_zero_status_bit(cpu, cpu->core.a);
+	common_func_reg_parity_status_bit(cpu, cpu->core.a);
+	common_func_reg_sign_status_bit(cpu, cpu->core.a);
+}
+
+static void sub_register_value(uint8_t reg_val, cpu_model_t *cpu)
+{
+	uint8_t two_qu = ~reg_val + 1;
+
+	uint8_t ac_res = (cpu->core.a & 0x0F) + (reg_val & 0x0F);
+	cpu->core.status.bits.ac = ((ac_res & 0x10) != 0x00);
+
+	uint16_t c_res = cpu->core.a + two_qu;
+	cpu->core.status.bits.c = ((c_res & 0x0100) != 0x00);
+
+	cpu->core.a = (uint8_t) (c_res & 0x00FF);
+
+	common_func_reg_zero_status_bit(cpu, cpu->core.a);
+	common_func_reg_parity_status_bit(cpu, cpu->core.a);
+	common_func_reg_sign_status_bit(cpu, cpu->core.a);
+
+}
+
+static void cmp_register_value(uint8_t reg_val, cpu_model_t *cpu)
+{
+	uint8_t two_q = ~reg_val + 1;
+
+	uint8_t ac_res = (cpu->core.a & 0x0F) + (two_q & 0x0F);
+	cpu->core.status.bits.ac = ((ac_res & 0x10) != 0);
+
+	uint16_t c_res = cpu->core.a + two_q;
+	cpu->core.status.bits.c = ((c_res & 0x0100) != 0);
+
+	uint8_t result = cpu->core.a + two_q;
+
+	common_func_reg_zero_status_bit(cpu, result);
+	common_func_reg_parity_status_bit(cpu, result);
+	common_func_reg_sign_status_bit(cpu, result);
+}
+
+static void ora_register_value(uint8_t reg_val, cpu_model_t *cpu)
+{
+	cpu->core.c = 0;
+
+	cpu->core.a |= reg_val;
+
+	cpu->core.status.bits.c = 0;
+	common_func_reg_zero_status_bit(cpu, cpu->core.a);
+	common_func_reg_parity_status_bit(cpu, cpu->core.a);
+	common_func_reg_sign_status_bit(cpu, cpu->core.a);
+}
+
+static void ana_register_value(uint8_t reg_val, cpu_model_t *cpu)
+{
+	cpu->core.c = 0;
+
+	cpu->core.a &= reg_val;
+
+	cpu->core.status.bits.c = 0;
+	common_func_reg_zero_status_bit(cpu, cpu->core.a);
+	common_func_reg_parity_status_bit(cpu, cpu->core.a);
+	common_func_reg_sign_status_bit(cpu, cpu->core.a);
+}
+
+static void xra_register_value(uint8_t reg_val, cpu_model_t *cpu)
+{
+	cpu->core.c = 0;
+
+	cpu->core.a ^= reg_val;
+
+	cpu->core.status.bits.c = 0;
+	common_func_reg_zero_status_bit(cpu, cpu->core.a);
+	common_func_reg_parity_status_bit(cpu, cpu->core.a);
+	common_func_reg_sign_status_bit(cpu, cpu->core.a);
+}
+
 OPCODE_FUNC(ora_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+	uint16_t addr = (cpu->core.h << 8) | cpu->core.l;
+
+	switch (opcode) {
+		case 0xB0:
+			ora_register_value(cpu->core.b, cpu);
+			break;
+		case 0xB1:
+			ora_register_value(cpu->core.c, cpu);
+			break;
+		case 0xB2:
+			ora_register_value(cpu->core.d, cpu);
+			break;
+		case 0xB3:
+			ora_register_value(cpu->core.e, cpu);
+			break;
+		case 0xB4:
+			ora_register_value(cpu->core.h, cpu);
+			break;
+		case 0xB5:
+			ora_register_value(cpu->core.l, cpu);
+			break;
+		case 0xB6:
+			ora_register_value(ram->memory[addr], cpu);
+			break;
+		case 0xB7:
+			ora_register_value(cpu->core.a, cpu);
+			break;
+	}
+
+	INCR_PC_CNT(cpu);
+}
 
 OPCODE_FUNC(add_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+	uint16_t addr = (cpu->core.h << 8) | cpu->core.l;
+
+	switch (opcode) {
+		case 0x80:
+			add_register_value(cpu->core.b, cpu);
+			break;
+		case 0x81:
+			add_register_value(cpu->core.c, cpu);
+			break;
+		case 0x82:
+			add_register_value(cpu->core.d, cpu);
+			break;
+		case 0x83:
+			add_register_value(cpu->core.e, cpu);
+			break;
+		case 0x84:
+			add_register_value(cpu->core.h, cpu);
+			break;
+		case 0x85:
+			add_register_value(cpu->core.l, cpu);
+			break;
+		case 0x86:
+			add_register_value(ram->memory[addr], cpu);
+			break;
+		case 0x87:
+			add_register_value(cpu->core.a, cpu);
+			break;
+	}
+
+	INCR_PC_CNT(cpu);
+}
 
 OPCODE_FUNC(adc_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+	uint16_t addr = (cpu->core.h << 8) | cpu->core.l;
+
+	switch (opcode) {
+		case 0x88:
+			adc_register_value(cpu->core.b, cpu);
+			break;
+		case 0x89:
+			adc_register_value(cpu->core.c, cpu);
+			break;
+		case 0x8A:
+			adc_register_value(cpu->core.d, cpu);
+			break;
+		case 0x8B:
+			adc_register_value(cpu->core.e, cpu);
+			break;
+		case 0x8C:
+			adc_register_value(cpu->core.h, cpu);
+			break;
+		case 0x8D:
+			adc_register_value(cpu->core.l, cpu);
+			break;
+		case 0x8E:
+			adc_register_value(ram->memory[addr], cpu);
+			break;
+		case 0x8F:
+			adc_register_value(cpu->core.a, cpu);
+			break;
+	}
+
+	INCR_PC_CNT(cpu);
+}
 
 OPCODE_FUNC(sub_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+	uint16_t addr = (cpu->core.h << 8) | cpu->core.l;
+
+	switch (opcode) {
+		case 0x90:
+			sub_register_value(cpu->core.b, cpu);
+			break;
+		case 0x91:
+			sub_register_value(cpu->core.c, cpu);
+			break;
+		case 0x92:
+			sub_register_value(cpu->core.d, cpu);
+			break;
+		case 0x93:
+			sub_register_value(cpu->core.e, cpu);
+			break;
+		case 0x94:
+			sub_register_value(cpu->core.h, cpu);
+			break;
+		case 0x95:
+			sub_register_value(cpu->core.l, cpu);
+			break;
+		case 0x96:
+			sub_register_value(ram->memory[addr], cpu);
+			break;
+		case 0x97:
+			sub_register_value(cpu->core.a, cpu);
+			break;
+	}
+
+	INCR_PC_CNT(cpu);
+
+}
 
 OPCODE_FUNC(sbb_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+	uint16_t addr = (cpu->core.h << 8) | cpu->core.l;
+
+	switch (opcode) {
+		case 0x98:
+			sbb_register_value(cpu->core.b, cpu);
+			break;
+		case 0x99:
+			sbb_register_value(cpu->core.c, cpu);
+			break;
+		case 0x9A:
+			sbb_register_value(cpu->core.d, cpu);
+			break;
+		case 0x9B:
+			sbb_register_value(cpu->core.e, cpu);
+			break;
+		case 0x9C:
+			sbb_register_value(cpu->core.h, cpu);
+			break;
+		case 0x9D:
+			sbb_register_value(cpu->core.l, cpu);
+			break;
+		case 0x9E:
+			sbb_register_value(ram->memory[addr], cpu);
+			break;
+		case 0x9F:
+			sbb_register_value(cpu->core.a, cpu);
+			break;
+	}
+
+	INCR_PC_CNT(cpu);
+
+}
 
 OPCODE_FUNC(ana_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+	uint16_t addr = (cpu->core.h << 8) | cpu->core.l;
+
+	switch (opcode) {
+		case 0xA0:
+			ana_register_value(cpu->core.b, cpu);
+			break;
+		case 0xA1:
+			ana_register_value(cpu->core.c, cpu);
+			break;
+		case 0xA2:
+			ana_register_value(cpu->core.d, cpu);
+			break;
+		case 0xA3:
+			ana_register_value(cpu->core.e, cpu);
+			break;
+		case 0xA4:
+			ana_register_value(cpu->core.h, cpu);
+			break;
+		case 0xA5:
+			ana_register_value(cpu->core.l, cpu);
+			break;
+		case 0xA6:
+			ana_register_value(ram->memory[addr], cpu);
+			break;
+		case 0xA7:
+			ana_register_value(cpu->core.a, cpu);
+			break;
+	}
+
+	INCR_PC_CNT(cpu);
+
+}
 
 OPCODE_FUNC(xra_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+	uint16_t addr = (cpu->core.h << 8) | cpu->core.l;
+
+	switch (opcode) {
+		case 0xA8:
+			xra_register_value(cpu->core.b, cpu);
+			break;
+		case 0xA9:
+			xra_register_value(cpu->core.c, cpu);
+			break;
+		case 0xAA:
+			xra_register_value(cpu->core.d, cpu);
+			break;
+		case 0xAB:
+			xra_register_value(cpu->core.e, cpu);
+			break;
+		case 0xAC:
+			xra_register_value(cpu->core.h, cpu);
+			break;
+		case 0xAD:
+			xra_register_value(cpu->core.l, cpu);
+			break;
+		case 0xAE:
+			xra_register_value(ram->memory[addr], cpu);
+			break;
+		case 0xAF:
+			xra_register_value(cpu->core.a, cpu);
+			break;
+	}
+
+	INCR_PC_CNT(cpu);
+}
 
 OPCODE_FUNC(cmp_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+	uint16_t addr = (cpu->core.h << 8) | cpu->core.l;
+
+	switch (opcode) {
+		case 0xB8:
+			cmp_register_value(cpu->core.b, cpu);
+			break;
+		case 0xB9:
+			cmp_register_value(cpu->core.c, cpu);
+			break;
+		case 0xBA:
+			cmp_register_value(cpu->core.d, cpu);
+			break;
+		case 0xBB:
+			cmp_register_value(cpu->core.e, cpu);
+			break;
+		case 0xBC:
+			cmp_register_value(cpu->core.h, cpu);
+			break;
+		case 0xBD:
+			cmp_register_value(cpu->core.l, cpu);
+			break;
+		case 0xBE:
+			cmp_register_value(ram->memory[addr], cpu);
+			break;
+		case 0xBF:
+			cmp_register_value(cpu->core.a, cpu);
+			break;
+	}
+
+	INCR_PC_CNT(cpu);
+}
 
 // ---------------------------------------------------------------
 //              ROTATE ACCUMULATOR INSTRUCTIONS
