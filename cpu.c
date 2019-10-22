@@ -511,11 +511,46 @@ OPCODE_FUNC(ldax_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 // ---------------------------------------------------------------
 //        REGISTER OR MEMORY TO ACCUMULATOR INSTRUCTIONS
 // ---------------------------------------------------------------
+static void add_register_value(uint8_t reg_val, cpu_model_t *cpu)
+{
+	uint16_t prod = cpu->core.a + reg_val;
+}
+
 OPCODE_FUNC(ora_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 {}
 
 OPCODE_FUNC(add_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+
+	switch (opcode) {
+		case 0x80:
+			add_register_value(cpu->core.b, cpu);
+			break;
+		case 0x81:
+			add_register_value(cpu->core.c, cpu);
+			break;
+		case 0x82:
+			add_register_value(cpu->core.d, cpu);
+			break;
+		case 0x83:
+			add_register_value(cpu->core.e, cpu);
+			break;
+		case 0x84:
+			add_register_value(cpu->core.h, cpu);
+			break;
+		case 0x85:
+			add_register_value(cpu->core.l, cpu);
+			break;
+		case 0x86:
+			break;
+		case 0x87:
+			add_register_value(cpu->core.a, cpu);
+			break;
+	}
+
+	INCR_PC_CNT(cpu);
+}
 
 OPCODE_FUNC(adc_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 {}
