@@ -1095,38 +1095,112 @@ OPCODE_FUNC(cpo_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 // ---------------------------------------------------------------
 // 		RETURN FROM SUBROUTINE INSTRUCTIONS
 // ---------------------------------------------------------------
-OPCODE_FUNC(return_instr)(uint8_t flag, uint8_t arbiter, cpu_model_t* cpu)
-{}
+static void return_instr(memory_t *ram, cpu_model_t *cpu)
+{
+	uint8_t hbit = 0;
+	uint8_t lbit = 0;
+
+	pop_from_the_stack(&hbit, &lbit, ram, cpu);
+
+	cpu->core.pc = (hbit << 8) | lbit;
+}
 
 OPCODE_FUNC(ret_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	return_instr(ram, cpu);
+}
 
 OPCODE_FUNC(rz_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.status.bits.z = 1) {
+		return_instr(ram, cpu);
+	}
+
+	else {
+		INCR_PC_CNT(cpu);
+	}
+}
 
 OPCODE_FUNC(rnz_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.status.bits.z = 1) {
+		return_instr(ram, cpu);
+	}
+
+	else {
+		INCR_PC_CNT(cpu);
+	}
+}
 
 OPCODE_FUNC(rc_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.status.bits.c = 1) {
+		return_instr(ram, cpu);
+	}
+
+	else {
+		INCR_PC_CNT(cpu);
+	}
+}
 
 OPCODE_FUNC(rnc_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.status.bits.c = 0) {
+		return_instr(ram, cpu);
+	}
+
+	else {
+		INCR_PC_CNT(cpu);
+	}
+}
 
 OPCODE_FUNC(rm_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.status.bits.s = 1) {
+		return_instr(ram, cpu);
+	}
+
+	else {
+		INCR_PC_CNT(cpu);
+	}
+}
 
 OPCODE_FUNC(rp_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.status.bits.s = 0) {
+		return_instr(ram, cpu);
+	}
+
+	else {
+		INCR_PC_CNT(cpu);
+	}
+}
 
 OPCODE_FUNC(rpe_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.status.bits.p = 1) {
+		return_instr(ram, cpu);
+	}
+
+	else {
+		INCR_PC_CNT(cpu);
+	}
+}
 
 OPCODE_FUNC(rpo_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.status.bits.p = 0) {
+		return_instr(ram, cpu);
+	}
+
+	else {
+		INCR_PC_CNT(cpu);
+	}
+}
 
 OPCODE_FUNC(rst_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+}
 
 // ---------------------------------------------------------------
 // 		INTERRUPT FLIP-FLOP INSTRUCTIONS
