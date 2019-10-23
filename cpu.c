@@ -1411,10 +1411,17 @@ OPCODE_FUNC(rst_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 // 		INTERRUPT FLIP-FLOP INSTRUCTIONS
 // ---------------------------------------------------------------
 OPCODE_FUNC(di_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	cpu->interrupt_enable = false;	
+	INCR_PC_CNT(cpu);
+}
 
 OPCODE_FUNC(ei_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	cpu->interrupt_enable = true;
+	INCR_PC_CNT(cpu);
+
+}
 
 // ---------------------------------------------------------------
 // 		INPUT/OUTPUT INSTRUCTIONS
