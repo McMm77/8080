@@ -163,38 +163,36 @@ static unsigned char* asm_names[] = { "NOP", "LXI B", "STAX B", "INX B", "INR B"
 				      "ORA B", "ORA C", "ORA D", "ORA E", "ORA H", "ORA L", "ORA M", "ORA A",
 				      "CMP B", "CMP C", "CMP D", "CMP E", "CMP H", "CMP L", "CMP M", "CMP A",
 
-				      "RNZ", "POP B",   "JNZ", 	"JMP", 	"CNZ", 	"PUSH B",   "ADI", "RST",
-				      "RZ",  "RET",	"JZ", 	"JMP",  "CZ", 	"CALL",     "ACI", "RST",
-				      "RNC", "POP D", 	"JNC", 	"OUT",  "CNC", 	"PUSH D",   "SUI", "RST",
-				      "RC",  "RET", 	"JC", 	"IN",   "CC",   "CALL",     "SBI", "RST",
-				      "RPO", "POP H",   "JPO",  "XTHL", "CPO", 	"PUSH H",   "ANI", "RST",
-				      "RPE", "PCHL",    "JPE",  "XCHG", "CPE", 	"CALL",     "XRI", "RST",
-				      "RP",  "POP PSW", "JP", 	"DI",   "CP", 	"PUSH PSW", "ORI", "RST",
-				      "RM",  "SPHL",    "JM", 	"EI",   "CM", 	"CALL",     "CPI", "RST"};   	
-
-static int counter = 0x00;
+				      "RNZ", "POP B",   "JNZ", 	"JMP", 	"CNZ", 	"PUSH B",   "ADI", "RST 0",
+				      "RZ",  "RET",	"JZ", 	"JMP",  "CZ", 	"CALL",     "ACI", "RST 1",
+				      "RNC", "POP D", 	"JNC", 	"OUT",  "CNC", 	"PUSH D",   "SUI", "RST 2",
+				      "RC",  "RET", 	"JC", 	"IN",   "CC",   "CALL",     "SBI", "RST 3",
+				      "RPO", "POP H",   "JPO",  "XTHL", "CPO", 	"PUSH H",   "ANI", "RST 4",
+				      "RPE", "PCHL",    "JPE",  "XCHG", "CPE", 	"CALL",     "XRI", "RST 5",
+				      "RP",  "POP PSW", "JP", 	"DI",   "CP", 	"PUSH PSW", "ORI", "RST 6",
+				      "RM",  "SPHL",    "JM", 	"EI",   "CM", 	"CALL",     "CPI", "RST 7"};   	
 
 /* -------------------------------------------------------------- */
-static const char* write_extended_instr(const char* ass_cmd, const char* param, uint8_t  is_value)
+static const char* write_extended_instr(uint16_t counter, const char* ass_cmd, const char* param, uint8_t  is_value)
 {
 	static char compl_instr[16] = {0};
 	memset(compl_instr, 0, 16);
 
 	if(is_value)
-  	   sprintf(compl_instr, "0x%04x\t%s,#%s", counter++, ass_cmd, param);
+  	   sprintf(compl_instr, "0x%04x\t%s,#%s", counter, ass_cmd, param);
 	else
-	   sprintf(compl_instr, "0x%04x\t%s %s", counter++,  ass_cmd, param);
+	   sprintf(compl_instr, "0x%04x\t%s %s", counter,  ass_cmd, param);
 
 	return compl_instr;
 }
 
 
-static const char* write_instr(const char* ass_cmd)
+static const char* write_instr(uint16_t counter, const char* ass_cmd)
 {
 	static char compl_instr[16] = {0};
 	memset(compl_instr, 0, 16);
 
-	sprintf(compl_instr, "0x%04x\t%s", counter++, ass_cmd);
+	sprintf(compl_instr, "0x%04x\t%s", counter, ass_cmd);
 
 	return compl_instr;
 }
@@ -203,7 +201,7 @@ static const char* mov_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 
@@ -214,7 +212,7 @@ static const char* ora_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 
@@ -225,7 +223,7 @@ static const char* rz_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 
@@ -236,7 +234,7 @@ static const char* ldax_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -246,7 +244,7 @@ static const char* inx_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -256,7 +254,7 @@ static const char* dcx_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -269,8 +267,7 @@ static const char* jnz_instr(memory_t* rom, int* offset)
 	char parameter[12] = {0};
 	sprintf(parameter, "$%02x%02x", rom->memory[*offset+2], rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 0);
-
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 0);
 
 	*offset += 3;
 	return asm_code;
@@ -280,7 +277,7 @@ static const char* ret_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -290,7 +287,7 @@ static const char* nop_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -300,7 +297,7 @@ static const char* stax_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -311,7 +308,7 @@ static const char* inr_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -322,7 +319,7 @@ static const char* dcr_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -336,7 +333,7 @@ static const char* mvi_instr(memory_t* rom, int* offset)
 	char parameter[8] = {0};
 	sprintf(parameter, "$%02x", rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 1);
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 1);
 
 	*offset += 2;
 	return asm_code;
@@ -347,7 +344,7 @@ static const char* rlc_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -360,7 +357,7 @@ static const char* lxi_instr(memory_t* rom, int* offset)
 	char parameter[12] = {0};
 	sprintf(parameter, "$%02x%02x", rom->memory[*offset+2], rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 1);
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 1);
 
 	*offset += 3;
 	return asm_code;
@@ -371,7 +368,7 @@ static const char* dad_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -382,7 +379,7 @@ static const char* rrc_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -393,7 +390,7 @@ static const char* ral_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -404,7 +401,7 @@ static const char* rar_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -417,7 +414,7 @@ static const char* shld_instr(memory_t* rom, int* offset)
 	char parameter[12] = {0};
 
 	sprintf(parameter, "$%02x%02x", rom->memory[*offset+2], rom->memory[*offset+1]);
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 0);
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 0);
 
 	*offset += 3;
 	return asm_code;
@@ -428,7 +425,7 @@ static const char* daa_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -442,9 +439,9 @@ static const char* lhld_instr(memory_t* rom, int* offset)
 	char parameter[12] = {0};
 	sprintf(parameter, "$%02x%02x", rom->memory[*offset+2], rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 0);
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 0);
 
-	*offset += 1;
+	*offset += 3;
 	return asm_code;
 }
 
@@ -453,7 +450,7 @@ static const char* cma_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -466,7 +463,7 @@ static const char* sta_instr(memory_t* rom, int* offset)
 	char parameter[12] = {0};
 
 	sprintf(parameter, "$%02x%02x", rom->memory[*offset+2], rom->memory[*offset+1]); 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 0);
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 0);
 
 	*offset += 3;
 	return asm_code;
@@ -477,7 +474,7 @@ static const char* stc_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -490,9 +487,9 @@ static const char* lda_instr(memory_t* rom, int* offset)
 	char parameter[12] = {0};
 	sprintf(parameter, "$%02x%02x", rom->memory[*offset+2], rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 0);
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 0);
 
-	*offset += 1;
+	*offset += 3;
 	return asm_code;
 }
 
@@ -501,7 +498,7 @@ static const char* cmc_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -512,7 +509,7 @@ static const char* hlt_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -523,7 +520,7 @@ static const char* add_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -534,7 +531,7 @@ static const char* adc_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -545,7 +542,7 @@ static const char* sub_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -556,7 +553,7 @@ static const char* sbb_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -567,7 +564,7 @@ static const char* ana_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -578,7 +575,7 @@ static const char* xra_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -589,7 +586,7 @@ static const char* cmp_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -600,7 +597,7 @@ static const char* rnz_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -611,7 +608,7 @@ static const char* pop_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -626,8 +623,7 @@ static const char* jmp_instr(memory_t* rom, int* offset)
 	
 	sprintf(parameter, "$%02x%02x", rom->memory[*offset+2], rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 0);
-
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 0);
 
 	*offset += 3;
 	return asm_code;
@@ -641,8 +637,7 @@ static const char* cnz_instr(memory_t* rom, int* offset)
 	char parameter[12] = {0};
 	sprintf(parameter, "$%02x%02x", rom->memory[*offset+2], rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 0);
-
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 0);
 
 	*offset += 3;
 	return asm_code;
@@ -653,7 +648,7 @@ static const char* push_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -667,7 +662,7 @@ static const char* adi_instr(memory_t* rom, int* offset)
 	char parameter[6] = {0};
 	sprintf(parameter, "$%02x", rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 1);
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 1);
 
 	*offset += 2;
 	return asm_code;
@@ -678,7 +673,7 @@ static const char* rst_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -692,8 +687,7 @@ static const char* jz_instr(memory_t* rom, int* offset)
 	char parameter[12] = {0};
 	sprintf(parameter, "$%02x%02x", rom->memory[*offset+2], rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 0);
-
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 0);
 
 	*offset += 3;
 	return asm_code;
@@ -707,7 +701,7 @@ static const char* cz_instr(memory_t* rom, int* offset)
 	char parameter[12] = {0};
 	sprintf(parameter, "$%02x%02x", rom->memory[*offset+2], rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 0);
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 0);
 
 	*offset += 3;
 	return asm_code;
@@ -721,8 +715,7 @@ static const char* call_instr(memory_t* rom, int* offset)
 	char parameter[12] = {0};
 	sprintf(parameter, "$%02x%02x", rom->memory[*offset+2], rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 0);
-
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 0);
 
 	*offset += 3;
 	return asm_code;
@@ -737,8 +730,7 @@ static const char* aci_instr(memory_t* rom, int* offset)
 	char parameter[6] = {0};
 	sprintf(parameter, "$%02x", rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 1);
-
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 1);
 
 	*offset += 2;
 	return asm_code;
@@ -749,7 +741,7 @@ static const char* rnc_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -763,8 +755,7 @@ static const char* jnc_instr(memory_t* rom, int* offset)
 	char parameter[12] = {0};
 	sprintf(parameter, "$%02x%02x", rom->memory[*offset+2], rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 0);
-
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 0);
 
 	*offset += 3;
 	return asm_code;
@@ -778,8 +769,7 @@ static const char* out_instr(memory_t* rom, int* offset)
 	char parameter[6] = {0};
 	sprintf(parameter, "$%02x", rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 1);
-
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 1);
 
 	*offset += 2;
 	return asm_code;
@@ -793,7 +783,7 @@ static const char* cnc_instr(memory_t* rom, int* offset)
 	char parameter[12] = {0};
 	sprintf(parameter, "$%02x%02x", rom->memory[*offset+2], rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 0);
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 0);
 
 	*offset += 3;
 	return asm_code;
@@ -807,7 +797,7 @@ static const char* sui_instr(memory_t* rom, int* offset)
 	char parameter[6] = {0};
 	sprintf(parameter, "$%02x", rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 1);
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 1);
 
 
 	*offset += 2;
@@ -819,7 +809,7 @@ static const char* rc_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -833,7 +823,7 @@ static const char* jc_instr(memory_t* rom, int* offset)
 	char parameter[12] = {0};
 	sprintf(parameter, "$%02x%02x", rom->memory[*offset+2], rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 0);
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 0);
 
 
 	*offset += 3;
@@ -848,8 +838,7 @@ static const char* in_instr(memory_t* rom, int* offset)
 	char parameter[6] = {0};
 	sprintf(parameter, "$%02x", rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 1);
-
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 1);
 
 	*offset += 2;
 	return asm_code;
@@ -863,8 +852,7 @@ static const char* cc_instr(memory_t* rom, int* offset)
 	char parameter[12] = {0};
 	sprintf(parameter, "$%02x%02x", rom->memory[*offset+2], rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 0);
-
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 0);
 
 	*offset += 3;
 	return asm_code;
@@ -878,7 +866,7 @@ static const char* sbi_instr(memory_t* rom, int* offset)
 	char parameter[6] = {0};
 	sprintf(parameter, "$%02x", rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 1);
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 1);
 
 
 	*offset += 2;
@@ -890,7 +878,7 @@ static const char* rpo_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -904,8 +892,7 @@ static const char* jpo_instr(memory_t* rom, int* offset)
 	char parameter[12] = {0};
 	sprintf(parameter, "$%02x%02x", rom->memory[*offset+2], rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 0);
-
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 0);
 
 	*offset += 3;
 	return asm_code;
@@ -916,7 +903,7 @@ static const char* xthl_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -930,8 +917,7 @@ static const char* cpo_instr(memory_t* rom, int* offset)
 	char parameter[12] = {0};
 	sprintf(parameter, "$%02x%02x", rom->memory[*offset+2], rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 0);
-
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 0);
 
 	*offset += 3;
 	return asm_code;
@@ -945,8 +931,7 @@ static const char* ani_instr(memory_t* rom, int* offset)
 	char parameter[6] = {0};
 	sprintf(parameter, "$%02x", rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 1);
-
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 1);
 
 	*offset += 2;
 	return asm_code;
@@ -957,7 +942,7 @@ static const char* rpe_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -968,7 +953,7 @@ static const char* pchl_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -982,8 +967,7 @@ static const char* jpe_instr(memory_t* rom, int* offset)
 	char parameter[12] = {0};
 	sprintf(parameter, "$%02x%02x", rom->memory[*offset+2], rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 0);
-
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 0);
 
 	*offset += 3;
 	return asm_code;
@@ -994,7 +978,7 @@ static const char* xchg_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -1008,8 +992,7 @@ static const char* cpe_instr(memory_t* rom, int* offset)
 	char parameter[12] = {0};
 	sprintf(parameter, "$%02x%02x", rom->memory[*offset+2], rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 0);
-
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 0);
 
 	*offset += 3;
 	return asm_code;
@@ -1023,8 +1006,7 @@ static const char* xri_instr(memory_t* rom, int* offset)
 	char parameter[6] = {0};
 	sprintf(parameter, "$%02x", rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 1);
-
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 1);
 
 	*offset += 2;
 	return asm_code;
@@ -1035,7 +1017,7 @@ static const char* rp_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -1049,8 +1031,7 @@ static const char* jp_instr(memory_t* rom, int* offset)
 	char parameter[12] = {0};
 	sprintf(parameter, "$%02x%02x", rom->memory[*offset+2], rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 0);
-
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 0);
 
 	*offset += 3;
 	return asm_code;
@@ -1061,7 +1042,7 @@ static const char* di_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -1073,10 +1054,9 @@ static const char* cp_instr(memory_t* rom, int* offset)
 	uint8_t opcode = rom->memory[*offset];
 
 	char parameter[12] = {0};
-	sprintf(parameter, "$%02x%02x", rom->memory[*offset], rom->memory[*offset]);
+	sprintf(parameter, "$%02x%02x", rom->memory[*offset+2], rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 0);
-
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 0);
 
 	*offset += 3;
 	return asm_code;
@@ -1090,8 +1070,7 @@ static const char* ori_instr(memory_t* rom, int* offset)
 	char parameter[6] = {0};
 	sprintf(parameter, "$%02x", rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 1);
-
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 1);
 
 	*offset += 2;
 	return asm_code;
@@ -1102,7 +1081,7 @@ static const char* rm_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -1113,7 +1092,7 @@ static const char* sphl_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -1127,8 +1106,7 @@ static const char* jm_instr(memory_t* rom, int* offset)
 	char parameter[12] = {0};
 	sprintf(parameter, "$%02x%02x", rom->memory[*offset+2], rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 0);
-
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 0);
 
 	*offset += 3;
 	return asm_code;
@@ -1139,7 +1117,7 @@ static const char* ei_instr(memory_t* rom, int* offset)
 {
 	uint8_t opcode = rom->memory[*offset];
 
-	const char* asm_code = write_instr(asm_names[opcode]);
+	const char* asm_code = write_instr(*offset, asm_names[opcode]);
 
 	*offset += 1;
 	return asm_code;
@@ -1153,8 +1131,7 @@ static const char* cm_instr(memory_t* rom, int* offset)
 	char parameter[12] = {0};
 	sprintf(parameter, "$%02x%02x", rom->memory[*offset+2], rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 0);
-
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 0);
 
 	*offset += 3;
 	return asm_code;
@@ -1168,7 +1145,7 @@ static const char* cpi_instr(memory_t* rom, int* offset)
 	char parameter[6] = {0};
 	sprintf(parameter, "$%02x", rom->memory[*offset+1]);
 
-	const char* asm_code = write_extended_instr(asm_names[opcode], parameter, 1);
+	const char* asm_code = write_extended_instr(*offset, asm_names[opcode], parameter, 1);
 
 	*offset += 2;
 	return asm_code;
