@@ -1000,31 +1000,97 @@ OPCODE_FUNC(jpo_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 // 		CALL SUBROUTINE INSTRUCTIONS
 // ---------------------------------------------------------------
 OPCODE_FUNC(call_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint16_t pc_to_store = ((cpu->core.pc >> 8) & 0x0F) + 1;
+	uint8_t hbit = (pc_to_store >> 8) & 0x0F;
+	uint8_t lbit = pc_to_store & 0x0F;
+	uint8_t l_addr_bit = rom->memory[cpu->core.pc+1];
+	uint8_t h_addr_bit = rom->memory[cpu->core.pc+2];
+
+	push_on_the_stack(hbit, lbit, ram, cpu);
+
+	cpu->core.pc = (h_addr_bit << 8) | l_addr_bit;
+}
 
 OPCODE_FUNC(cc_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.status.bits.c == 1) {
+		call_instr(ram, rom, cpu);
+	}
+	else {
+		INCR_PC_X_CNT(cpu, 3);
+	}
+}
 
 OPCODE_FUNC(cnc_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.status.bits.c == 0) {
+		call_instr(ram, rom, cpu);
+	}
+	else {
+		INCR_PC_X_CNT(cpu, 3);
+	}
+}
 
 OPCODE_FUNC(cz_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.status.bits.z == 1) {
+		call_instr(ram, rom, cpu);
+	}
+	else {
+		INCR_PC_X_CNT(cpu, 3);
+	}
+}
 
 OPCODE_FUNC(cnz_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.status.bits.z == 0) {
+		call_instr(ram, rom, cpu);
+	}
+	else {
+		INCR_PC_X_CNT(cpu, 3);
+	}
+}
 
 OPCODE_FUNC(cm_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.status.bits.s == 0) {
+		call_instr(ram, rom, cpu);
+	}
+	else {
+		INCR_PC_X_CNT(cpu, 3);
+	}
+}
 
 OPCODE_FUNC(cp_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.status.bits.s == 1) {
+		call_instr(ram, rom, cpu);
+	}
+	else {
+		INCR_PC_X_CNT(cpu, 3);
+	}
+}
 
 OPCODE_FUNC(cpe_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.status.bits.p == 1) {
+		call_instr(ram, rom, cpu);
+	}
+	else {
+		INCR_PC_X_CNT(cpu, 3);
+	}
+}
 
 OPCODE_FUNC(cpo_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	if (cpu->core.status.bits.p == 0) {
+		call_instr(ram, rom, cpu);
+	}
+	else {
+		INCR_PC_X_CNT(cpu, 3);
+	}
+}
 
 // ---------------------------------------------------------------
 // 		RETURN FROM SUBROUTINE INSTRUCTIONS
