@@ -109,14 +109,62 @@ static bool extract_single_instr(char* ass_cmd, char *str, memory_t* rom)
 	return (index != -1);
 }
 
-static bool extract_single_param(char* ass_cmd, memory_t* rom)
+static bool extract_single_param(char* ass_cmd, char *str, memory_t* rom)
 {
-	return false;
+	char temp_str[10] = {0};
+	char * p = strcat(temp_str, ass_cmd);
+	char * s = strtok(NULL, " ,");
+	uint8_t data = 0;
+
+	if (strcmp(ass_cmd, "MVI") == 0)
+	{
+		p = strcat(p,s);
+		s = strtok(NULL, " ,");
+	}
+
+	char *i = strstr(s, "H");
+
+	if (i != 0) {
+		i = 0;
+		data = strtol(s, NULL, 16);
+	} else {
+		data = atoi(s);
+	}
+
+	int index = search_for_assembly_table_entry(temp_str);
+
+	if (index != -1) {
+		rom->memory[0] = opcode_table[index].opcode;
+		rom->memory[1] = data;
+	}
+
+	return (index != -1);
 }
 
-static bool extract_dual_param(char *ass_cmd, memory_t *rom)
+static bool extract_dual_param(char *ass_cmd, char *str, memory_t *rom)
 {
-	return false;
+	char temp_str[10] = {0};
+	char *p = strcat(temp_str, ass_cmd);
+	char *s = strtok(NULL, " ,");
+	char *i = strstr(s, "H");
+	uint16_t data = 0;
+
+	if (i!= 0) {
+		i = 0;
+		data = strtol(s, NULL, 16);
+	} else {
+		data = atoi(s);
+	}
+
+	int index = search_for_assembly_table_entry(temp_str);
+
+	if (index != -1) {
+		rom->memory[0] = opcode_table[index].opcode;
+		rom->memory[1] = (data & 0xFF);
+		rom->memory[2] = (data >> 8) & 0xFF;
+	}
+
+	return (index != -1);
 }
 
 static bool is_valid_instr(char *ass_cmd, const char* instr_table[])
@@ -136,18 +184,18 @@ static bool is_valid_instr(char *ass_cmd, const char* instr_table[])
 bool assemble(memory_t *rom, char *cmd)
 {
 	bool is_valid_cmd = false;
-	char *ass_cmd = strtok(cmd, " ");
 
+	char *ass_cmd = strtok(cmd, " ");
 	if (is_valid_instr(ass_cmd, single_instr_tab)) {
 		is_valid_cmd = extract_single_instr(ass_cmd, cmd, rom);
 	}
 
 	else if (is_valid_instr(ass_cmd, single_param_instr_tab)) {
-		is_valid_cmd = extract_single_param(cmd, rom);
+		is_valid_cmd = extract_single_param(ass_cmd, cmd, rom);
 	}
 
 	else if (is_valid_instr(ass_cmd, dual_param_instr_tab)) {
-		is_valid_cmd = extract_dual_param(cmd, rom);
+		is_valid_cmd = extract_dual_param(ass_cmd, cmd, rom);
 	}
 
 	else

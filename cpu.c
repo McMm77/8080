@@ -10,6 +10,47 @@ typedef unsigned long uint32_t;
 #define INCR_PC_X_CNT(cpu_ptr, x)   (cpu_ptr->core.pc += x)
 #define SET_PC_CNT(cpu_ptr, x)      (cpu_ptr->core.pc = x)
 
+typedef enum opcode_cmd { eNOP1 = 0x00,
+			  eLXIB, eSTAXB, eINXB, eINRB, eDCRB 
+} opcode_cmd_t;
+
+typedef void (*opcode_handler) (memory_t*, memory_t*, cpu_model_t*);
+
+typedef struct opcode_instr {
+	opcode_cmd_t cmd_id;
+	char *ass_cmd;
+	uint8_t cycle_time;
+	uint8_t min_cycle_time;
+	uint8_t max_cycle_time;
+	uint8_t pc_jump;		/* Number of opcode bytes */
+	opcode_handler func;
+} opcode_instr_t;
+
+static void test_nop_instr(memory_t*, memory_t*, cpu_model_t*);
+static void test_lixb_instr(memory_t*, memory_t*, cpu_model_t*);
+static void test_staxb_instr(memory_t*, memory_t*, cpu_model_t*);
+static void test_inxb_instr(memory_t*, memory_t*, cpu_model_t*);
+
+
+static opcode_instr_t opcode_t[] = {{eNOP1, "NOP", 4, 4, 4, 1, test_nop_instr},
+				    {eLXIB, "LXIB", 10, 10, 10, 3, test_lixb_instr},
+				    {eSTAXB, "STAXB", 7, 7, 7, 3, test_staxb_instr},
+				    {eINXB, "INXB", 5, 5, 5, 1, test_inxb_instr}};
+
+static void test_nop_instr(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
+{}
+
+static void test_lixb_instr(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
+{}
+
+static void test_staxb_instr(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
+{}
+
+static void test_inxb_instr(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
+{}
+
+
+	
 static void mov_instr(memory_t*, memory_t*, cpu_model_t*);
 static void ora_instr(memory_t*, memory_t*, cpu_model_t*);
 static void rz_instr(memory_t*, memory_t*, cpu_model_t*);
@@ -804,7 +845,41 @@ OPCODE_FUNC(sphl_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 //              IMMEDIATE INSTRUCTIONS
 // ---------------------------------------------------------------
 OPCODE_FUNC(mvi_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+	uint8_t data = rom->memory[cpu->core.pc+1];
+	uint16_t addr = (cpu->core.h << 8) | cpu->core.l;
+
+	switch (opcode) {
+		case 0x06:
+			cpu->core.b = data;
+			break;
+		case 0x16:
+			cpu->core.d = data;
+			break;
+		case 0x26:
+			cpu->core.h = data;
+			break;
+		case 0x36:
+			ram->memory[addr] = data;
+			break;
+		case 0x0E:
+			cpu->core.c = data;
+			break;
+		case 0x1E:
+			cpu->core.e = data;
+			break;
+		case 0x2E:
+			cpu->core.l = data;
+			break;
+		case 0x3E:
+			cpu->core.a = data;
+			break;
+
+	}
+
+	INCR_PC_X_CNT(cpu, 2);
+}
 
 OPCODE_FUNC(adi_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 {}
@@ -828,10 +903,18 @@ OPCODE_FUNC(ori_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 {}
 
 OPCODE_FUNC(cpi_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t data = rom->memory[cpu->core.pc + 1];
+	uint8_t accu = cpu->core.a;
+	uint8_t resu = accu + (~data + 1);
+
+	INCR_PC_X_CNT(cpu, 2);
+}
 
 OPCODE_FUNC(lxi_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+
+}
 
 // ---------------------------------------------------------------
 // 		DIRECT ADDRESSING INSTRUCTIONS
@@ -1200,6 +1283,8 @@ OPCODE_FUNC(rpo_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 
 OPCODE_FUNC(rst_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 {
+	uint8_t opcode = rom->memory[cpu->core.pc];
+
 	switch (opcode) {
 		case 0xC7:
 			break;
@@ -1215,9 +1300,11 @@ OPCODE_FUNC(rst_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 			break;
 		case 0xEF:
 			break;
-		case 0xF7:
+		case 0xFF:
 			break;
+	}
 
+	INCR_PC_CNT(cpu);
 }
 
 // ---------------------------------------------------------------
@@ -1329,6 +1416,8 @@ void cpu_set_reg_value(cpu_model_t *cpu_8080, char reg, uint8_t val)
 // -----------------------------------------------------------------------------------
 void execute_single_cpu_cycle(memory_t* ram, memory_t* rom, cpu_model_t* cpu_8080)
 {
+	cpu_8080->core.pc = 0;
+
 	uint16_t opcode = rom->memory[0];
 
 	(*assembly_instr[opcode])(ram, rom, cpu_8080);
