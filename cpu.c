@@ -1149,31 +1149,186 @@ OPCODE_FUNC(sphl_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 //              IMMEDIATE INSTRUCTIONS
 // ---------------------------------------------------------------
 OPCODE_FUNC(mvi_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+	uint8_t data = rom->memory[cpu->core.pc+1];
+	uint16_t addr = (cpu->core.h << 8) | cpu->core.l;
+
+	switch (opcode) {
+		case 0x06:
+			cpu->core.b = data;
+			break;
+		case 0x16:
+			cpu->core.d = data;
+			break;
+		case 0x26:
+			cpu->core.h = data;
+			break;
+		case 0x36:
+			ram->memory[addr] = data;
+			break;
+		case 0x0E:
+			cpu->core.c = data;
+			break;
+		case 0x1E:
+			cpu->core.e = data;
+			break;
+		case 0x2E:
+			cpu->core.l = data;
+			break;
+		case 0x3E:
+			cpu->core.a = data;
+	}
+
+	INCR_PC_X_CNT(cpu, 2);
+}
 
 OPCODE_FUNC(adi_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t data  = rom->memory[cpu->core.pc + 1];
+
+	cpu->core.a += data;
+
+	uint8_t ac_res = (cpu->core.a & 0x0F) + (data & 0x0F);
+	cpu->core.status.bits.ac = ((ac_res & 0x10) != 0x00);
+
+	uint16_t res = cpu->core.a  + data;
+	cpu->core.status.bits.c = ((res & 0x0100) != 0x00);
+
+	cpu->core.a = (uint8_t) (res & 0x00FF);
+
+	common_func_reg_zero_status_bit(cpu, cpu->core.a);
+	common_func_reg_parity_status_bit(cpu, cpu->core.a);
+	common_func_reg_sign_status_bit(cpu, cpu->core.a);
+
+	INCR_PC_X_CNT(cpu, 2);
+}
 
 OPCODE_FUNC(aci_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t data = rom->memory[cpu->core.pc + 1];
+	uint8_t cbit = cpu->core.status.bits.c != 0;
+
+	uint8_t ac_res = (cpu->core.a & 0x0F) + (data & 0x0F) + cbit;
+	cpu->core.status.bits.ac = ((ac_res & 0x10) != 0x00);
+
+	uint16_t res = cpu->core.a  + data + cbit;
+	cpu->core.status.bits.c = ((res & 0x0100) != 0x00);
+
+	cpu->core.a = (uint8_t) (res & 0x00FF);
+
+	common_func_reg_zero_status_bit(cpu, cpu->core.a);
+	common_func_reg_parity_status_bit(cpu, cpu->core.a);
+	common_func_reg_sign_status_bit(cpu, cpu->core.a);
+
+	INCR_PC_X_CNT(cpu, 2);
+}
 
 OPCODE_FUNC(sui_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t data = rom->memory[cpu->core.pc + 1];
+	uint8_t two_qu = ~data + 1;
+
+	uint8_t ac_res = (cpu->core.a & 0x0F) + (data & 0x0F);
+	cpu->core.status.bits.ac = ((ac_res & 0x10) != 0x00);
+
+	uint16_t c_res = cpu->core.a + two_qu;
+	cpu->core.status.bits.c = ((c_res & 0x0100) != 0x00);
+
+	cpu->core.a = (uint8_t) (c_res & 0x00FF);
+
+	common_func_reg_zero_status_bit(cpu, cpu->core.a);
+	common_func_reg_parity_status_bit(cpu, cpu->core.a);
+	common_func_reg_sign_status_bit(cpu, cpu->core.a);
+
+	INCR_PC_X_CNT(cpu, 2);
+}
 
 OPCODE_FUNC(sbi_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t data = rom->memory[cpu->core.pc + 1];
+	uint8_t cbit = cpu->core.status.bits.c != 0;
+	uint8_t two_qu = ~(data + cbit) + 1;
+
+	uint8_t ac_res = (cpu->core.a & 0x0F) + (data & 0x0F);
+	cpu->core.status.bits.ac = ((ac_res & 0x10) != 0x00);
+
+	uint16_t c_res = cpu->core.a + two_qu;
+	cpu->core.status.bits.c = ((c_res & 0x0100) != 0x00);
+
+	cpu->core.a = (uint8_t) (c_res & 0x00FF);
+
+	common_func_reg_zero_status_bit(cpu, cpu->core.a);
+	common_func_reg_parity_status_bit(cpu, cpu->core.a);
+	common_func_reg_sign_status_bit(cpu, cpu->core.a);
+
+	INCR_PC_X_CNT(cpu, 2);
+}
 
 OPCODE_FUNC(ani_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t data = rom->memory[cpu->core.pc + 1];
+
+	cpu->core.a &= data;
+
+	cpu->core.status.bits.c = 0;
+
+	common_func_reg_zero_status_bit(cpu, cpu->core.a);
+	common_func_reg_parity_status_bit(cpu, cpu->core.a);
+	common_func_reg_sign_status_bit(cpu, cpu->core.a);
+
+	INCR_PC_X_CNT(cpu, 2);
+}
 
 OPCODE_FUNC(xri_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t data = rom->memory[cpu->core.pc + 1];
+
+	cpu->core.a ^= data;
+
+	cpu->core.status.bits.c = 0;
+
+	common_func_reg_zero_status_bit(cpu, cpu->core.a);
+	common_func_reg_parity_status_bit(cpu, cpu->core.a);
+	common_func_reg_sign_status_bit(cpu, cpu->core.a);
+
+	INCR_PC_X_CNT(cpu, 2);
+}
 
 OPCODE_FUNC(ori_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t data = rom->memory[cpu->core.pc + 1];
+
+	cpu->core.a |= data;
+
+	cpu->core.status.bits.c = 0;
+
+	common_func_reg_zero_status_bit(cpu, cpu->core.a);
+	common_func_reg_parity_status_bit(cpu, cpu->core.a);
+	common_func_reg_sign_status_bit(cpu, cpu->core.a);
+
+	INCR_PC_X_CNT(cpu, 2);
+}
 
 OPCODE_FUNC(cpi_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t data = rom->memory[cpu->core.pc + 1];
+	uint8_t two_q = ~data + 1;
+
+	uint8_t ac_res = (cpu->core.a & 0x0F) + (two_q & 0x0F);
+	cpu->core.status.bits.ac = ((ac_res & 0x10) != 0);
+
+	uint16_t c_res = cpu->core.a + two_q;
+	cpu->core.status.bits.c = ((c_res & 0x0100) != 0);
+
+	uint8_t result = cpu->core.a + two_q;
+
+	common_func_reg_zero_status_bit(cpu, result);
+	common_func_reg_parity_status_bit(cpu, result);
+	common_func_reg_sign_status_bit(cpu, result);
+
+	INCR_PC_X_CNT(cpu, 2);
+}
 
 OPCODE_FUNC(lxi_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 {}
