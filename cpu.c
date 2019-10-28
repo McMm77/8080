@@ -804,7 +804,39 @@ OPCODE_FUNC(sphl_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 //              IMMEDIATE INSTRUCTIONS
 // ---------------------------------------------------------------
 OPCODE_FUNC(mvi_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = ram->memory[cpu->core.pc];
+	uint8_t data = ram->memory[cpu->core.pc+1];
+	uint16_t addr = (cpu->core.h << 8) | cpu->core.l;
+
+	switch (opcode) {
+		case 0x06:
+			cpu->core.b = data;
+			break;
+		case 0x16:
+			cpu->core.d = data;
+			break;
+		case 0x26:
+			cpu->core.h = data;
+			break;
+		case 0x36:
+			ram->memory[addr] = data;
+			break;
+		case 0x0E:
+			cpu->core.c = data;
+			break;
+		case 0x1E:
+			cpu->core.e = data;
+			break;
+		case 0x2E:
+			cpu->core.l = data;
+			break;
+		case 0x3E:
+			cpu->core.a = data;
+	}
+
+	INCR_PC_X_CNT(cpu, 2);
+}
 
 OPCODE_FUNC(adi_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 {}
@@ -1200,6 +1232,8 @@ OPCODE_FUNC(rpo_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 
 OPCODE_FUNC(rst_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 {
+	uint8_t opcode = rom->memory[cpu->core.pc];
+
 	switch (opcode) {
 		case 0xC7:
 			break;
@@ -1215,8 +1249,9 @@ OPCODE_FUNC(rst_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 			break;
 		case 0xEF:
 			break;
-		case 0xF7:
+		case 0xFF:
 			break;
+	}
 
 }
 
