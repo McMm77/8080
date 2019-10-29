@@ -130,7 +130,7 @@ static void (*assembly_instr[]) (memory_t*, memory_t*, cpu_model_t*) =
 
 
 // ---------------------------------------------------------------
-static void display_curr_cpu_status(cpu_core_t* core)
+void display_curr_cpu_status(cpu_core_t* core)
 {
 	printf("\n--------------------------");
 	printf("------ CPU STATUS --------\n");
@@ -214,7 +214,7 @@ OPCODE_FUNC(dcr_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 	}
 
 	else {
-		*reg--;
+		(*reg)--;
 		common_func_reg_zero_status_bit(cpu, *reg);
 		common_func_reg_parity_status_bit(cpu, *reg);
 		common_func_reg_sign_status_bit(cpu, *reg);
@@ -1330,8 +1330,32 @@ OPCODE_FUNC(cpi_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 	INCR_PC_X_CNT(cpu, 2);
 }
 
+static uint16_t get_direct_address_from_mem(memory_t *mem, cpu_model_t *cpu);
+
 OPCODE_FUNC(lxi_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+
+	switch(opcode) {
+		case 0x01:
+			cpu->core.c = rom->memory[cpu->core.pc + 1];
+			cpu->core.b = rom->memory[cpu->core.pc + 2];
+			break;
+		case 0x11:
+			cpu->core.e = rom->memory[cpu->core.pc + 1];
+			cpu->core.d = rom->memory[cpu->core.pc + 2];
+			break;
+		case 0x21:
+			cpu->core.l = rom->memory[cpu->core.pc + 1];
+			cpu->core.h = rom->memory[cpu->core.pc + 2];
+			break;
+		case 0x31:
+			cpu->core.stack = get_direct_address_from_mem(rom, cpu);
+			break;
+	}
+
+	INCR_PC_X_CNT(cpu, 3);
+}
 
 // ---------------------------------------------------------------
 // 		DIRECT ADDRESSING INSTRUCTIONS
@@ -1700,26 +1724,41 @@ OPCODE_FUNC(rpo_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 
 OPCODE_FUNC(rst_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 {
-	uint8_t opcode = rom->memory[cpu->core.pc];
+	uint8_t opcode = rom->memory[0];
+	uint8_t hbit   = (uint8_t) (((cpu->core.pc + 1) >> 8) & 0xFF);
+	uint8_t lbit   = (uint8_t) ((cpu->core.pc + 1) & 0xFF);
+	uint16_t cnt   = 0x00;
+
+	push_on_the_stack(hbit, lbit, ram, cpu);
 
 	switch (opcode) {
 		case 0xC7:
+			cnt = 8 * 0;
 			break;
 		case 0xD7:
+			cnt = 8 * 2;
 			break;
 		case 0xE7:
+			cnt = 8 * 4;
 			break;
 		case 0xF7:
+			cnt = 8 * 6;
 			break;
 		case 0xCF:
+			cnt = 8 * 1;
 			break;
 		case 0xDF:
+			cnt = 8 * 3;
 			break;
 		case 0xEF:
+			cnt = 8 * 5;
 			break;
 		case 0xFF:
+			cnt = 8 * 7;
 			break;
 	}
+
+	cpu->core.pc = cnt;
 
 }
 
@@ -1743,10 +1782,14 @@ OPCODE_FUNC(ei_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 // 		INPUT/OUTPUT INSTRUCTIONS
 // ---------------------------------------------------------------
 OPCODE_FUNC(out_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	INCR_PC_X_CNT(cpu, 2);
+}
 
 OPCODE_FUNC(in_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	INCR_PC_X_CNT(cpu, 2);
+}
 
 // ---------------------------------------------------------------
 // 		HALT INSTRUCTIONS
@@ -1768,28 +1811,28 @@ void reset_cpu(cpu_model_t *cpu_8080)
 uint8_t cpu_get_reg_value(cpu_model_t *cpu_8080, char reg)
 {
 	switch (reg) {
-		case 'a':
+		case 'A':
 			reg = cpu_8080->core.a;
 			break;
-		case 'b':
+		case 'B':
 			reg = cpu_8080->core.b;
 			break;
-		case 'c':
+		case 'C':
 			reg = cpu_8080->core.c;
 			break;
-		case 'd':
+		case 'D':
 			reg = cpu_8080->core.d;
 			break;
-		case 'e':
+		case 'E':
 			reg = cpu_8080->core.e;
 			break;
-		case 'h':
+		case 'H':
 			reg = cpu_8080->core.h;
 			break;
-		case 'l':
+		case 'L':
 			reg = cpu_8080->core.l;
 			break;
-		case 'm':
+		case 'M':
 			reg = cpu_8080->core.m;
 			break;
 	}
@@ -1801,28 +1844,28 @@ uint8_t cpu_get_reg_value(cpu_model_t *cpu_8080, char reg)
 void cpu_set_reg_value(cpu_model_t *cpu_8080, char reg, uint8_t val)
 {
 	switch (reg) {
-		case 'a':
+		case 'A':
 			cpu_8080->core.a = val;
 			break;
-		case 'b':
+		case 'B':
 			cpu_8080->core.b = val;
 			break;
-		case 'c':
+		case 'C':
 			cpu_8080->core.c = val;
 			break;
-		case 'd':
+		case 'D':
 			cpu_8080->core.d = val;
 			break;
-		case 'e':
+		case 'E':
 			cpu_8080->core.e = val;
 			break;
-		case 'h':
+		case 'H':
 			cpu_8080->core.h = val;
 			break;
-		case 'l':
+		case 'L':
 			cpu_8080->core.l = val;
 			break;
-		case 'm':
+		case 'M':
 			cpu_8080->core.m = val;
 			break;
 	}
@@ -1830,15 +1873,20 @@ void cpu_set_reg_value(cpu_model_t *cpu_8080, char reg, uint8_t val)
 
 
 // -----------------------------------------------------------------------------------
-void execute_single_cpu_cycle(memory_t* ram, memory_t* rom, cpu_model_t* cpu_8080)
+void execute_interrupt_opcode_cmd(memory_t *ram, memory_t* rom, cpu_model_t* cpu_8080)
 {
-	cpu_8080->core.pc = 0;
-
 	uint16_t opcode = rom->memory[0];
 
 	(*assembly_instr[opcode])(ram, rom, cpu_8080);
+}
 
-	display_curr_cpu_status(&cpu_8080->core);
+bool execute_single_cpu_cycle(memory_t* ram, memory_t* rom, cpu_model_t* cpu_8080)
+{
+	uint16_t opcode = rom->memory[cpu_8080->core.pc];
+
+	(*assembly_instr[opcode])(ram, rom, cpu_8080);
+
+	return (cpu_8080->core.pc < rom->memory_size);
 }
 
 // -----------------------------------------------------------------------------------
