@@ -3,6 +3,7 @@
 #include <string.h>
 #include "cpu.h"
 #include "cli_parser.h"
+#include "deassembler.h"
 
 #define EMULATOR_VERSION_MAJOR		0
 #define EMULATOR_VERSION_MINOR		1
@@ -97,7 +98,7 @@ static void write_to_ram(char *str, cpu_model_t *cpu)
 static void opcode_cmd(char *str, cpu_model_t *cpu, memory_t *rom)
 {
 	if (parse_opcode_cmd(rom, str) == true) {
-		execute_single_cpu_cycle(&ram_memory, rom, cpu);
+		execute_interrupt_opcode_cmd(&ram_memory, rom, cpu);
 	}
 
 	else {
@@ -125,14 +126,16 @@ static void execute_cmd(cmd_type_t cmd, char *str, cpu_model_t *cpu, memory_t* r
 		case e_opcode_cmd:
 			opcode_cmd(str, cpu, rom);
 			break;
+		default:
+			break;
 	}
 }
 
 static void enter_cli()
 {
 	uint8_t bLoop = 0;
-
 	cpu_model_t cpu = {0};
+
 	rom_memory.memory = malloc(4);
 	rom_memory.memory_size = 0;
 
@@ -142,6 +145,7 @@ static void enter_cli()
 		printf("Assembly Code << ");
 		int ret = scanf(" %[^\n]s", str);
 
+		cpu.core.pc = 0;
 		execute_cmd(get_cmd(str), str, &cpu, &rom_memory);
 	}
 }
@@ -155,6 +159,40 @@ static void enter_bin(char* rom_file)
 	}
 
 	execute_cpu(&ram_memory, &rom_memory, &cpu);
+}
+
+static void enter_step(char *rom_file)
+{
+	bool bLoop = true;
+	
+	memory_t debug_rom_memory = {0};
+	cpu_model_t cpu = {0};
+	
+	debug_rom_memory.memory = malloc(4);
+	debug_rom_memory.memory_size = 0;
+
+	if(load_rom_memory_from_file(rom_file, &rom_memory) != 0)   {
+		exit(0);
+	}
+
+	memcpy(ram_memory.memory, rom_memory.memory, rom_memory.memory_size);
+
+	while( bLoop == true) {
+		char str[80] = {0};
+
+		printf("\e[1;1H\e[2J");
+	
+		dissamble_curr_instr(&rom_memory, cpu.core.pc);
+		bLoop = execute_single_cpu_cycle(&ram_memory, &rom_memory, &cpu); 
+		dissamble_curr_instr(&rom_memory, cpu.core.pc);
+		display_curr_cpu_status(&cpu.core);
+
+		printf("\n\nCMD << ");
+	
+		int ret = scanf(" %[^\n]s", str);
+
+		execute_cmd(get_cmd(str), str, &cpu, &debug_rom_memory);
+	}
 }
 
 static void enter_test_image() {
@@ -177,6 +215,11 @@ static void execute_code(char exec, int argc, char* argv[])
 	else if(exec == 'b' && argc >= 3) {
 		printf("8080 Emulator Normal Mode\n");
 		enter_bin(argv[2]);
+	}
+
+	else if(exec == 's' && argc >= 3) {
+		printf("8080 Emulator Step Mode\n");
+		enter_step(argv[2]);
 	}
 
 	else if(exec == 't' ) {
