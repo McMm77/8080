@@ -1811,28 +1811,28 @@ void reset_cpu(cpu_model_t *cpu_8080)
 uint8_t cpu_get_reg_value(cpu_model_t *cpu_8080, char reg)
 {
 	switch (reg) {
-		case 'a':
+		case 'A':
 			reg = cpu_8080->core.a;
 			break;
-		case 'b':
+		case 'B':
 			reg = cpu_8080->core.b;
 			break;
-		case 'c':
+		case 'C':
 			reg = cpu_8080->core.c;
 			break;
-		case 'd':
+		case 'D':
 			reg = cpu_8080->core.d;
 			break;
-		case 'e':
+		case 'E':
 			reg = cpu_8080->core.e;
 			break;
-		case 'h':
+		case 'H':
 			reg = cpu_8080->core.h;
 			break;
-		case 'l':
+		case 'L':
 			reg = cpu_8080->core.l;
 			break;
-		case 'm':
+		case 'M':
 			reg = cpu_8080->core.m;
 			break;
 	}
@@ -1844,28 +1844,28 @@ uint8_t cpu_get_reg_value(cpu_model_t *cpu_8080, char reg)
 void cpu_set_reg_value(cpu_model_t *cpu_8080, char reg, uint8_t val)
 {
 	switch (reg) {
-		case 'a':
+		case 'A':
 			cpu_8080->core.a = val;
 			break;
-		case 'b':
+		case 'B':
 			cpu_8080->core.b = val;
 			break;
-		case 'c':
+		case 'C':
 			cpu_8080->core.c = val;
 			break;
-		case 'd':
+		case 'D':
 			cpu_8080->core.d = val;
 			break;
-		case 'e':
+		case 'E':
 			cpu_8080->core.e = val;
 			break;
-		case 'h':
+		case 'H':
 			cpu_8080->core.h = val;
 			break;
-		case 'l':
+		case 'L':
 			cpu_8080->core.l = val;
 			break;
-		case 'm':
+		case 'M':
 			cpu_8080->core.m = val;
 			break;
 	}
@@ -1873,15 +1873,20 @@ void cpu_set_reg_value(cpu_model_t *cpu_8080, char reg, uint8_t val)
 
 
 // -----------------------------------------------------------------------------------
-void execute_single_cpu_cycle(memory_t* ram, memory_t* rom, cpu_model_t* cpu_8080)
+void execute_interrupt_opcode_cmd(memory_t *ram, memory_t* rom, cpu_model_t* cpu_8080)
 {
-	cpu_8080->core.pc = 0;
-
 	uint16_t opcode = rom->memory[0];
 
 	(*assembly_instr[opcode])(ram, rom, cpu_8080);
+}
 
-	display_curr_cpu_status(&cpu_8080->core);
+bool execute_single_cpu_cycle(memory_t* ram, memory_t* rom, cpu_model_t* cpu_8080)
+{
+	uint16_t opcode = rom->memory[cpu_8080->core.pc];
+
+	(*assembly_instr[opcode])(ram, rom, cpu_8080);
+
+	return (cpu_8080->core.pc < rom->memory_size);
 }
 
 // -----------------------------------------------------------------------------------

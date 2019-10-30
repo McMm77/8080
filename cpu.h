@@ -44,6 +44,7 @@ typedef struct cpu_model {
 	cpu_core_t	core;
 } cpu_model_t;	
 
+void execute_interrupt_opcode_cmd(memory_t *ram, memory_t* cmd, cpu_model_t* cpu_8080);
 
 /* ---------------------------------------
  * Sets a reg value
@@ -63,7 +64,7 @@ void reset_cpu(cpu_model_t*);
 /* ---------------------------------------
  * Executes a single instruction
  */
-void execute_single_cpu_cycle(memory_t*, memory_t*, cpu_model_t*);
+bool execute_single_cpu_cycle(memory_t*, memory_t*, cpu_model_t*);
 
 /* ---------------------------------------
  * executes a program 
@@ -74,6 +75,8 @@ void execute_cpu(memory_t*, memory_t*, cpu_model_t*);
  * Returns pointer to the register
  */
 uint8_t *common_func_get_reg(cpu_model_t*, uint8_t);
+
+void display_curr_cpu_status(cpu_core_t* core);
 
 /* ---------------------------------------
  * Will (re)set the zero status but depending of the 
