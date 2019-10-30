@@ -1724,26 +1724,41 @@ OPCODE_FUNC(rpo_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 
 OPCODE_FUNC(rst_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 {
-	uint8_t opcode = rom->memory[cpu->core.pc];
+	uint8_t opcode = rom->memory[0];
+	uint8_t hbit   = (uint8_t) (((cpu->core.pc + 1) >> 8) & 0xFF);
+	uint8_t lbit   = (uint8_t) ((cpu->core.pc + 1) & 0xFF);
+	uint16_t cnt   = 0x00;
+
+	push_on_the_stack(hbit, lbit, ram, cpu);
 
 	switch (opcode) {
 		case 0xC7:
+			cnt = 8 * 0;
 			break;
 		case 0xD7:
+			cnt = 8 * 2;
 			break;
 		case 0xE7:
+			cnt = 8 * 4;
 			break;
 		case 0xF7:
+			cnt = 8 * 6;
 			break;
 		case 0xCF:
+			cnt = 8 * 1;
 			break;
 		case 0xDF:
+			cnt = 8 * 3;
 			break;
 		case 0xEF:
+			cnt = 8 * 5;
 			break;
 		case 0xFF:
+			cnt = 8 * 7;
 			break;
 	}
+
+	cpu->core.pc = cnt;
 
 }
 
