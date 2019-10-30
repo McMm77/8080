@@ -214,7 +214,7 @@ OPCODE_FUNC(dcr_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 	}
 
 	else {
-		*reg--;
+		(*reg)--;
 		common_func_reg_zero_status_bit(cpu, *reg);
 		common_func_reg_parity_status_bit(cpu, *reg);
 		common_func_reg_sign_status_bit(cpu, *reg);
