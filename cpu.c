@@ -1782,10 +1782,14 @@ OPCODE_FUNC(ei_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 // 		INPUT/OUTPUT INSTRUCTIONS
 // ---------------------------------------------------------------
 OPCODE_FUNC(out_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	INCR_PC_X_CNT(cpu, 2);
+}
 
 OPCODE_FUNC(in_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	INCR_PC_X_CNT(cpu, 2);
+}
 
 // ---------------------------------------------------------------
 // 		HALT INSTRUCTIONS
