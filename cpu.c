@@ -1330,8 +1330,32 @@ OPCODE_FUNC(cpi_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 	INCR_PC_X_CNT(cpu, 2);
 }
 
+static uint16_t get_direct_address_from_mem(memory_t *mem, cpu_model_t *cpu);
+
 OPCODE_FUNC(lxi_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
-{}
+{
+	uint8_t opcode = rom->memory[cpu->core.pc];
+
+	switch(opcode) {
+		case 0x01:
+			cpu->core.c = rom->memory[cpu->core.pc + 1];
+			cpu->core.b = rom->memory[cpu->core.pc + 2];
+			break;
+		case 0x11:
+			cpu->core.e = rom->memory[cpu->core.pc + 1];
+			cpu->core.d = rom->memory[cpu->core.pc + 2];
+			break;
+		case 0x21:
+			cpu->core.l = rom->memory[cpu->core.pc + 1];
+			cpu->core.h = rom->memory[cpu->core.pc + 2];
+			break;
+		case 0x31:
+			cpu->core.stack = get_direct_address_from_mem(rom, cpu);
+			break;
+	}
+
+	INCR_PC_X_CNT(cpu, 3);
+}
 
 // ---------------------------------------------------------------
 // 		DIRECT ADDRESSING INSTRUCTIONS
