@@ -1525,9 +1525,9 @@ OPCODE_FUNC(jpo_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 // ---------------------------------------------------------------
 OPCODE_FUNC(call_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)
 {
-	uint16_t pc_to_store = ((cpu->core.pc >> 8) & 0x0F) + 1;
-	uint8_t hbit = (pc_to_store >> 8) & 0x0F;
-	uint8_t lbit = pc_to_store & 0x0F;
+	uint16_t pc_to_store = cpu->core.pc + 3;
+	uint8_t hbit = (pc_to_store >> 8) & 0xFF;
+	uint8_t lbit = pc_to_store & 0xFF;
 	uint8_t l_addr_bit = rom->memory[cpu->core.pc+1];
 	uint8_t h_addr_bit = rom->memory[cpu->core.pc+2];
 
