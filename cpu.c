@@ -130,7 +130,7 @@ static void (*assembly_instr[]) (memory_t*, memory_t*, cpu_model_t*) =
 
 
 // ---------------------------------------------------------------
-static void display_curr_cpu_status(cpu_core_t* core)
+void display_curr_cpu_status(cpu_core_t* core)
 {
 	printf("\n--------------------------");
 	printf("------ CPU STATUS --------\n");
@@ -975,8 +975,8 @@ static inline void push_on_the_stack(uint8_t hbit, uint8_t lbit, memory_t *ram, 
 
 static inline void pop_from_the_stack(uint8_t *hbit, uint8_t *lbit, memory_t *ram, cpu_model_t *cpu)
 {
-	*hbit = ram->memory[(cpu->core.stack)++];
 	*lbit = ram->memory[(cpu->core.stack)++];
+	*hbit = ram->memory[(cpu->core.stack)++];
 }
 
 OPCODE_FUNC(push_instr)(memory_t* ram, memory_t* rom, cpu_model_t* cpu)

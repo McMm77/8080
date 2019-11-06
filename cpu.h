@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include "common_types.h"
 
+/* */
 typedef union status_reg {
 
 	struct {
