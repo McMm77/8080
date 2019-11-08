@@ -30,12 +30,21 @@ SOURCES += \
     opcodes.cpp \
     cpu_core_flags.cpp \
     invaders.cpp \
-    cpu.cpp
+    cpu.cpp \
+    nop_opcode.cpp \
+    carry_bit_opcode.cpp \
+    single_register_opcodes.cpp \
+    register_pair_opcodes.cpp \
+    rotate_acc_opcodes.cpp \
+    jump_opcodes.cpp
 
 HEADERS += \
         mainwindow.h \
     cpu_core.h \
-    opcodes.h
+    opcodes.h \
+    register_pair_opcodes.h \
+    rotate_acc_opcodes.h \
+    jmp_opcode.h
 
 FORMS += \
         mainwindow.ui

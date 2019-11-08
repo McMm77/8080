@@ -1,9 +1,55 @@
+#include <QString>
 #include "opcodes.h"
 #include "cpu_core.h"
 
-opcodes::opcodes()
+opcodes::opcodes(uint8_t instr_size)
+    : size(instr_size)
+{}
+
+opcodes::opcodes(uint8_t _opcode_size, uint8_t _cycle_steps, uint8_t _max_cycle_steps, QString _cmd_string)
+    : size(_opcode_size),
+      cycle_steps(cycle_steps),
+      max_cycle_steps(_max_cycle_steps),
+      assembly_command(_cmd_string)
+{}
+
+QString opcodes::convert_opcode_to_assembly(cpu& cpu_8080, uint16_t temp_pc)
 {
+    QString param;
+    QString cmd = QString::number(temp_pc);
+    cmd.append(": ");
+    cmd.append(assembly_command);
+
+    if (size == 2) {
+        uint8_t par = cpu_8080.rom().get_u8(temp_pc+ 1);
+        QString par_str = QString::number(par);
+        cmd.append(" $");
+        cmd.append(par_str);
+    }
+    else if (size == 3) {
+        uint16_t par = cpu_8080.rom().get_u16(temp_pc + 1);
+        QString par_str = QString::number(par);
+        cmd.append(" $");
+        cmd.append(par_str);
+    }
+
+    return cmd;
 }
+
+void opcodes::store_pre_debug_data(cpu& cpu_8080, cpu_debug& debug) {
+    debug.curr_opcode_cmd = convert_opcode_to_assembly(cpu_8080, cpu_8080.core_p().get_pc());
+    debug.curr_core_flags = cpu_8080.core_flag();
+    debug.curr_core = cpu_8080.core_p();
+}
+
+void opcodes::store_post_debug_data(cpu& cpu_8080, cpu_debug& debug) {
+    debug.post_opcode_cmd = convert_opcode_to_assembly(cpu_8080, cpu_8080.core_p().get_pc());
+    debug.post_core_flags = cpu_8080.core_flag();
+    debug.post_core = cpu_8080.core_p();
+}
+
+void opcodes::handle_opcode(cpu&)
+{}
 
 void cma_opcode::handle_opcode(cpu &cpu_8080)
 {
@@ -13,104 +59,6 @@ void cma_opcode::handle_opcode(cpu &cpu_8080)
     cpu_8080.core_p().increase_pc(instr_size());
 }
 
-void cmc_opcode::handle_opcode(cpu &cpu_8080)
-{
-    uint8_t c_bit = (cpu_8080.core_flag().get_c_flag() == 0) ? 1 : 0;
-
-    cpu_8080.core_flag().set_c_flag(c_bit);
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void stc_opcode::handle_opcode(cpu &cpu_8080)
-{
-    cpu_8080.core_flag().set_c_flag(1);
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void node_opcode::handle_opcode(cpu &cpu_8080)
-{
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void jmp_opcode::handle_opcode(cpu& cpu_8080)
-{
-    uint16_t addr = cpu_8080.rom().get_u16(cpu_8080.core_p().get_pc() + 1);
-    cpu_8080.core_p().set_pc_to(addr);
-}
-
-void jpo_opcode::handle_opcode(cpu &cpu_8080)
-{
-    if (cpu_8080.core_flag().get_p_flag() == 0) {
-        jmp_opcode::handle_opcode(cpu_8080);
-    } else {
-        cpu_8080.core_p().increase_pc(instr_size());
-    }
-}
-
-void jpe_opcode::handle_opcode(cpu& cpu_8080)
-{
-    if(cpu_8080.core_flag().get_p_flag()) {
-        jmp_opcode::handle_opcode(cpu_8080);
-    } else {
-        cpu_8080.core_p().increase_pc(instr_size());
-    }
-}
-
-void jc_opcode::handle_opcode(cpu &cpu_8080)
-{
-    if(cpu_8080.core_flag().get_c_flag()) {
-        jmp_opcode::handle_opcode(cpu_8080);
-    } else {
-        cpu_8080.core_p().increase_pc(instr_size());
-    }
-}
-
-void jnc_opcode::handle_opcode(cpu &cpu_8080)
-{
-    if(cpu_8080.core_flag().get_c_flag() == 0) {
-        jmp_opcode::handle_opcode(cpu_8080);
-    } else {
-        cpu_8080.core_p().increase_pc(instr_size());
-    }
-}
-
-void jz_opcode::handle_opcode(cpu &cpu_8080)
-{
-    if(cpu_8080.core_flag().get_z_flag() == 0) {
-        jmp_opcode::handle_opcode(cpu_8080);
-    } else {
-        cpu_8080.core_p().increase_pc(instr_size());
-    }
-}
-
-void jnz_opcode::handle_opcode(cpu &cpu_8080)
-{
-    if(cpu_8080.core_flag().get_z_flag() == 0) {
-        jmp_opcode::handle_opcode(cpu_8080);
-    } else {
-        cpu_8080.core_p().increase_pc(instr_size());
-    }
-}
-
-void jm_opcode::handle_opcode(cpu &cpu_8080)
-{
-    if(cpu_8080.core_flag().get_s_flag() == 0) {
-        jmp_opcode::handle_opcode(cpu_8080);
-    } else {
-        cpu_8080.core_p().increase_pc(instr_size());
-    }
-}
-
-void jp_opcode::handle_opcode(cpu &cpu_8080)
-{
-    if(cpu_8080.core_flag().get_s_flag() == 0) {
-        jmp_opcode::handle_opcode(cpu_8080);
-    } else {
-        cpu_8080.core_p().increase_pc(instr_size());
-    }
-}
 
 void call_opcode::handle_opcode(cpu &cpu_8080)
 {
@@ -269,6 +217,7 @@ void rm_opcode::handle_opcode(cpu &cpu_8080)
     }
 }
 
+
 void mvi_b_opcode::handle_opcode(cpu &cpu_8080)
 {
     uint8_t data = cpu_8080.rom().get_u8(cpu_8080.core_p().get_pc() + 1);
@@ -372,17 +321,6 @@ void sta_opcode::handle_opcode(cpu& cpu_8080)
     cpu_8080.core_p().increase_pc(instr_size());
 }
 
-void rrc_opcode::handle_opcode(cpu &cpu_8080)
-{
-    uint8_t reg_a = cpu_8080.core_p().get_reg_a();
-    uint8_t lbit = ((reg_a & 0x01) != 0);
-
-    reg_a <<= 1;
-    reg_a |= (lbit << 7);
-
-    cpu_8080.core_flag().set_c_flag(lbit);
-}
-
 void lda_opcode::handle_opcode(cpu &cpu_8080)
 {
     uint16_t addr = cpu_8080.rom().get_u16(cpu_8080.core_p().get_pc()+1);
@@ -412,71 +350,6 @@ void daa_opcode::handle_opcode(cpu &cpu_8080)
     cpu_8080.core_p().increase_pc(instr_size());
 }
 
-void pop_b_opcode::handle_opcode(cpu &cpu_8080)
-{
-    cpu_8080.core_p().set_reg_c(cpu_8080.pop_from_the_stack());
-    cpu_8080.core_p().set_reg_b(cpu_8080.pop_from_the_stack());
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void pop_d_opcode::handle_opcode(cpu &cpu_8080)
-{
-    cpu_8080.core_p().set_reg_e(cpu_8080.pop_from_the_stack());
-    cpu_8080.core_p().set_reg_d(cpu_8080.pop_from_the_stack());
-
-    cpu_8080.core_p().increase_pc(instr_size());
-
-}
-
-void pop_h_opcode::handle_opcode(cpu &cpu_8080)
-{
-    cpu_8080.core_p().set_reg_l(cpu_8080.pop_from_the_stack());
-    cpu_8080.core_p().set_reg_h(cpu_8080.pop_from_the_stack());
-
-    cpu_8080.core_p().increase_pc(instr_size());
-
-}
-
-void pop_psw_opcode::handle_opcode(cpu &cpu_8080)
-{
-    cpu_8080.core_flag().set_psw(cpu_8080.pop_from_the_stack());
-    cpu_8080.core_p().set_reg_h(cpu_8080.pop_from_the_stack());
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void push_b_opcode::handle_opcode(cpu &cpu_8080)
-{
-    cpu_8080.push_on_the_stack(cpu_8080.core_p().get_reg_b());
-    cpu_8080.push_on_the_stack(cpu_8080.core_p().get_reg_b());
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void push_d_opcode::handle_opcode(cpu &cpu_8080)
-{
-    cpu_8080.push_on_the_stack(cpu_8080.core_p().get_reg_d());
-    cpu_8080.push_on_the_stack(cpu_8080.core_p().get_reg_e());
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void push_h_opcode::handle_opcode(cpu &cpu_8080)
-{
-    cpu_8080.push_on_the_stack(cpu_8080.core_p().get_reg_h());
-    cpu_8080.push_on_the_stack(cpu_8080.core_p().get_reg_l());
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void push_psw_opcode::handle_opcode(cpu &cpu_8080)
-{
-    cpu_8080.push_on_the_stack(cpu_8080.core_p().get_reg_a());
-    cpu_8080.push_on_the_stack(cpu_8080.core_flag().get_psw());
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
 
 void ei_opcode::handle_opcode(cpu &cpu_8080)
 {
@@ -498,45 +371,8 @@ void shld_opcode::handle_opcode(cpu &cpu_8080)
     cpu_8080.core_p().increase_pc(instr_size());
 }
 
-void rlc_opcode::handle_opcode(cpu &cpu_8080)
-{
-    uint8_t reg_a = cpu_8080.core_p().get_reg_a();
-    uint8_t hbit = (reg_a & 0x80) != 0;
 
-    reg_a <<= 1;
-    reg_a |= hbit;
 
-    cpu_8080.core_flag().set_c_flag(hbit);
-    cpu_8080.core_p().set_reg_a(reg_a);
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void rar_opcode::handle_opcode(cpu& cpu_8080)
-{
-    uint8_t reg_a = cpu_8080.core_p().get_reg_a();
-    uint8_t c_status_flag = cpu_8080.core_flag().get_c_flag();
-    uint8_t lbit = ((reg_a & 0x01) !=0 );
-
-    reg_a >>= 1;
-    reg_a |= (c_status_flag << 7);
-    cpu_8080.core_flag().set_c_flag(lbit);
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void xchg_opcode::handle_opcode(cpu &cpu_8080)
-{
-    uint8_t hbit = cpu_8080.core_p().get_reg_d();
-    uint8_t lbit = cpu_8080.core_p().get_reg_e();
-
-    cpu_8080.core_p().set_reg_d(cpu_8080.core_p().get_reg_h());
-    cpu_8080.core_p().set_reg_e(cpu_8080.core_p().get_reg_l());
-    cpu_8080.core_p().set_reg_h(hbit);
-    cpu_8080.core_p().set_reg_l(lbit);
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
 
 void lhld_opcode::handle_opcode(cpu &cpu_8080)
 {
@@ -548,17 +384,6 @@ void lhld_opcode::handle_opcode(cpu &cpu_8080)
     cpu_8080.core_p().increase_pc(instr_size());
 }
 
-void xthl_opcode::handle_opcode(cpu &cpu_8080)
-{
-    uint16_t stack_addr = cpu_8080.core_p().get_sp();
-    uint8_t l_bit = cpu_8080.core_p().get_reg_l();
-    uint8_t h_bit = cpu_8080.core_p().get_reg_h();
-
-    cpu_8080.rom().set_u8(stack_addr, l_bit);
-    cpu_8080.rom().set_u8(stack_addr+1, h_bit);
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
 
 void pchl_opcode::handle_opcode(cpu &cpu_8080)
 {
@@ -612,161 +437,6 @@ void ldax_d_opcode::handle_opcode(cpu &cpu_8080)
 void hlt_opcode::handle_opcode(cpu &cpu_8080)
 {
     cpu_8080.cpu_running(false);
-}
-
-void rst7_opcode::handle_opcode(cpu&)
-{}
-
-
-void mov_opcode::handle_opcode(cpu&)
-{}
-
-void inx_opcode::handle_opcode(cpu&)
-{}
-
-void dcx_opcode::handle_opcode(cpu&)
-{}
-
-void dad_opcode::handle_opcode(cpu&)
-{}
-
-
-void out_opcode::handle_opcode(cpu&)
-{}
-
-void in_opcode::handle_opcode(cpu&)
-{}
-
-void inr_opcode::inr(cpu &cpu_8080, uint8_t val)
-{
-    val++;
-
-    cpu_8080.core_flag().set_p_flag(val);
-    cpu_8080.core_flag().set_z_flag(val);
-    cpu_8080.core_flag().set_s_flag(val);
-}
-
-void inr_b_opcode::handle_opcode(cpu &cpu_8080)
-{
-    inr(cpu_8080, cpu_8080.core_p().get_reg_b());
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void inr_c_opcode::handle_opcode(cpu &cpu_8080)
-{
-    inr(cpu_8080, cpu_8080.core_p().get_reg_c());
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void inr_d_opcode::handle_opcode(cpu &cpu_8080)
-{
-    inr(cpu_8080, cpu_8080.core_p().get_reg_d());
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void inr_e_opcode::handle_opcode(cpu &cpu_8080)
-{
-    inr(cpu_8080, cpu_8080.core_p().get_reg_e());
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void inr_h_opcode::handle_opcode(cpu &cpu_8080)
-{
-    inr(cpu_8080, cpu_8080.core_p().get_reg_h());
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void inr_l_opcode::handle_opcode(cpu &cpu_8080)
-{
-    inr(cpu_8080, cpu_8080.core_p().get_reg_l());
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void inr_m_opcode::handle_opcode(cpu &cpu_8080)
-{
-    uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
-    inr(cpu_8080, cpu_8080.rom().get_u8(addr));
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void inr_a_opcode::handle_opcode(cpu &cpu_8080)
-{
-    inr(cpu_8080, cpu_8080.core_p().get_reg_a());
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void dcr_opcode::dcr(cpu &cpu_8080, uint8_t& val)
-{
-    val--;
-
-    cpu_8080.core_flag().set_p_flag(val);
-    cpu_8080.core_flag().set_z_flag(val);
-    cpu_8080.core_flag().set_s_flag(val);
-}
-
-void dcr_b_opcode::handle_opcode(cpu &cpu_8080)
-{
-    dcr(cpu_8080, cpu_8080.core_p().get_reg_b());
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void dcr_c_opcode::handle_opcode(cpu &cpu_8080)
-{
-    dcr(cpu_8080, cpu_8080.core_p().get_reg_c());
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void dcr_d_opcode::handle_opcode(cpu &cpu_8080)
-{
-    dcr(cpu_8080, cpu_8080.core_p().get_reg_d());
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void dcr_e_opcode::handle_opcode(cpu &cpu_8080)
-{
-    dcr(cpu_8080, cpu_8080.core_p().get_reg_e());
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void dcr_h_opcode::handle_opcode(cpu &cpu_8080)
-{
-    dcr(cpu_8080, cpu_8080.core_p().get_reg_h());
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void dcr_l_opcode::handle_opcode(cpu &cpu_8080)
-{
-    dcr(cpu_8080, cpu_8080.core_p().get_reg_l());
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void dcr_m_opcode::handle_opcode(cpu &cpu_8080)
-{
-    uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
-    dcr(cpu_8080, cpu_8080.rom().get_u8(addr));
-
-    cpu_8080.core_p().increase_pc(instr_size());
-}
-
-void dcr_a_opcode::handle_opcode(cpu &cpu_8080)
-{
-    dcr(cpu_8080, cpu_8080.core_p().get_reg_a());
-
-    cpu_8080.core_p().increase_pc(instr_size());
 }
 
 void add_opcode::add(cpu &cpu_8080, uint8_t val)
@@ -1237,6 +907,65 @@ void cpi_opcode::handle_opcode(cpu &cpu_8080)
     cpu_8080.core_p().increase_pc(instr_size());
 }
 
+// ---------- *
+void adc_b_opcode::handle_opcode(cpu &cpu_8080)
+{
+    adc(cpu_8080, cpu_8080.core_p().get_reg_b());
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void adc_c_opcode::handle_opcode(cpu &cpu_8080)
+{
+    adc(cpu_8080, cpu_8080.core_p().get_reg_c());
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void adc_d_opcode::handle_opcode(cpu &cpu_8080)
+{
+    adc(cpu_8080, cpu_8080.core_p().get_reg_d());
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void adc_e_opcode::handle_opcode(cpu &cpu_8080)
+{
+    adc(cpu_8080, cpu_8080.core_p().get_reg_e());
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void adc_h_opcode::handle_opcode(cpu &cpu_8080)
+{
+    adc(cpu_8080, cpu_8080.core_p().get_reg_h());
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void adc_l_opcode::handle_opcode(cpu &cpu_8080)
+{
+    adc(cpu_8080, cpu_8080.core_p().get_reg_l());
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void adc_m_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
+    adc(cpu_8080, cpu_8080.rom().get_u16(addr));
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void adc_a_opcode::handle_opcode(cpu &cpu_8080)
+{
+    adc(cpu_8080, cpu_8080.core_p().get_reg_a());
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void aci_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint8_t val = cpu_8080.rom().get_u8(cpu_8080.core_p().get_pc()+1);
+    adc(cpu_8080, val);
+    cpu_8080.core_p().increase_pc(instr_size());
+
+}
+// ---------- *
 void add_b_opcode::handle_opcode(cpu &cpu_8080)
 {
     add(cpu_8080, cpu_8080.core_p().get_reg_b());
@@ -1294,3 +1023,561 @@ void adi_opcode::handle_opcode(cpu &cpu_8080)
     cpu_8080.core_p().increase_pc(instr_size());
 
 }
+
+
+
+
+// ---------- MOV B
+void mov_bb_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_b(cpu_8080.core_p().get_reg_b());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_bc_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_b(cpu_8080.core_p().get_reg_c());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_bd_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_b(cpu_8080.core_p().get_reg_d());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_be_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_b(cpu_8080.core_p().get_reg_e());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_bh_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_b(cpu_8080.core_p().get_reg_h());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_bl_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_b(cpu_8080.core_p().get_reg_l());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_bm_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
+    uint8_t val = cpu_8080.rom().get_u8(addr);
+    cpu_8080.core_p().set_reg_b(val);
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_ba_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_b(cpu_8080.core_p().get_reg_a());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+
+
+// ------------ MOV C
+void mov_cb_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_c(cpu_8080.core_p().get_reg_b());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_cc_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_c(cpu_8080.core_p().get_reg_c());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_cd_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_c(cpu_8080.core_p().get_reg_d());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_ce_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_c(cpu_8080.core_p().get_reg_e());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_ch_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_c(cpu_8080.core_p().get_reg_h());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_cl_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_c(cpu_8080.core_p().get_reg_l());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_cm_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
+    uint8_t val = cpu_8080.rom().get_u8(addr);
+
+    cpu_8080.core_p().set_reg_c(val);
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_ca_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_c(cpu_8080.core_p().get_reg_a());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+
+// --------------- MOV D
+void mov_db_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_d(cpu_8080.core_p().get_reg_b());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_dc_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_d(cpu_8080.core_p().get_reg_c());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_dd_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_d(cpu_8080.core_p().get_reg_d());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_de_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_d(cpu_8080.core_p().get_reg_e());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_dh_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_d(cpu_8080.core_p().get_reg_h());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_dl_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_d(cpu_8080.core_p().get_reg_l());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_dm_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
+    uint8_t val = cpu_8080.rom().get_u8(addr);
+
+    cpu_8080.core_p().set_reg_d(val);
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_da_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_d(cpu_8080.core_p().get_reg_a());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+
+// ------------- MOV E
+void mov_eb_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_e(cpu_8080.core_p().get_reg_b());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_ec_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_e(cpu_8080.core_p().get_reg_c());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_ed_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_e(cpu_8080.core_p().get_reg_d());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_ee_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_e(cpu_8080.core_p().get_reg_e());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_eh_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_e(cpu_8080.core_p().get_reg_h());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_el_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_e(cpu_8080.core_p().get_reg_l());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_em_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
+    uint8_t val = cpu_8080.rom().get_u8(addr);
+
+    cpu_8080.core_p().set_reg_e(val);
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_ea_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_e(cpu_8080.core_p().get_reg_a());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+// ------------- MOV H
+void mov_hb_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_h(cpu_8080.core_p().get_reg_b());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_hc_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_h(cpu_8080.core_p().get_reg_c());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_hd_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_h(cpu_8080.core_p().get_reg_d());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_he_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_h(cpu_8080.core_p().get_reg_e());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_hh_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_h(cpu_8080.core_p().get_reg_h());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_hl_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_h(cpu_8080.core_p().get_reg_l());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_hm_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
+    uint8_t val = cpu_8080.rom().get_u8(addr);
+
+    cpu_8080.core_p().set_reg_h(val);
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_ha_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_h(cpu_8080.core_p().get_reg_a());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+// ------------- MOV L
+void mov_lb_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_l(cpu_8080.core_p().get_reg_b());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_lc_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_l(cpu_8080.core_p().get_reg_c());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_ld_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_l(cpu_8080.core_p().get_reg_d());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_le_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_l(cpu_8080.core_p().get_reg_e());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_lh_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_l(cpu_8080.core_p().get_reg_h());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_ll_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_l(cpu_8080.core_p().get_reg_l());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_lm_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
+    uint8_t val = cpu_8080.rom().get_u8(addr);
+
+    cpu_8080.core_p().set_reg_l(val);
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_la_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_l(cpu_8080.core_p().get_reg_a());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+// ------------- MOV M
+void mov_mb_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
+    cpu_8080.rom().set_u8(addr, cpu_8080.core_p().get_reg_b());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_mc_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
+    cpu_8080.rom().set_u8(addr, cpu_8080.core_p().get_reg_c());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_md_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
+    cpu_8080.rom().set_u8(addr, cpu_8080.core_p().get_reg_d());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_me_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
+    cpu_8080.rom().set_u8(addr, cpu_8080.core_p().get_reg_e());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_mh_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
+    cpu_8080.rom().set_u8(addr, cpu_8080.core_p().get_reg_h());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_ml_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
+    cpu_8080.rom().set_u8(addr, cpu_8080.core_p().get_reg_l());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_ma_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
+    cpu_8080.rom().set_u8(addr, cpu_8080.core_p().get_reg_a());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+// ------------- MOV A
+void mov_ab_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_a(cpu_8080.core_p().get_reg_b());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_ac_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_a(cpu_8080.core_p().get_reg_c());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_ad_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_a(cpu_8080.core_p().get_reg_d());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_ae_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_a(cpu_8080.core_p().get_reg_e());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_ah_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_a(cpu_8080.core_p().get_reg_h());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_al_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_a(cpu_8080.core_p().get_reg_l());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_am_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
+    uint8_t val = cpu_8080.rom().get_u8(addr);
+
+    cpu_8080.core_p().set_reg_a(val);
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void mov_aa_opcode::handle_opcode(cpu &cpu_8080)
+{
+    cpu_8080.core_p().set_reg_a(cpu_8080.core_p().get_reg_a());
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+void rst0_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = cpu_8080.core_p().get_pc() + 1;
+    cpu_8080.push_u16_on_the_stack(addr);
+
+    cpu_8080.core_p().set_pc_to(0*8);
+}
+
+void rst1_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = cpu_8080.core_p().get_pc() + 1;
+    cpu_8080.core_p().set_pc_to(0);
+    cpu_8080.push_u16_on_the_stack(addr);
+
+    cpu_8080.core_p().set_pc_to(1*8);
+}
+
+void rst2_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = cpu_8080.core_p().get_pc() + 1;
+    cpu_8080.push_u16_on_the_stack(addr);
+
+    cpu_8080.core_p().set_pc_to(2*8);
+}
+
+void rst3_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = cpu_8080.core_p().get_pc() + 1;
+    cpu_8080.push_u16_on_the_stack(addr);
+
+    cpu_8080.core_p().set_pc_to(3*8);
+}
+
+void rst4_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = cpu_8080.core_p().get_pc() + 1;
+    cpu_8080.push_u16_on_the_stack(addr);
+
+    cpu_8080.core_p().set_pc_to(4*8);
+}
+
+void rst5_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = cpu_8080.core_p().get_pc() + 1;
+    cpu_8080.push_u16_on_the_stack(addr);
+
+    cpu_8080.core_p().set_pc_to(5*8);
+}
+
+void rst6_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = cpu_8080.core_p().get_pc() + 1;
+    cpu_8080.push_u16_on_the_stack(addr);
+
+    cpu_8080.core_p().set_pc_to(6*8);
+}
+
+void rst7_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = cpu_8080.core_p().get_pc() + 1;
+    cpu_8080.push_u16_on_the_stack(addr);
+
+    cpu_8080.core_p().set_pc_to(7*8);
+}
+
+
+
+
+
+void out_opcode::handle_opcode(cpu&)
+{}
+
+void in_opcode::handle_opcode(cpu&)
+{}

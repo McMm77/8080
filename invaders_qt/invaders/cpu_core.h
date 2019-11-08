@@ -1,52 +1,87 @@
 #ifndef CPU_CORE_H
 #define CPU_CORE_H
 
-#include <map>
+#include "create_map.h"
 #include "opcodes.h"
 #include <QFile>
 #include <QByteArray>
 #include <QThread>
+#include <QMutex>
 
 using namespace std;
 
 class cpu_memory : public QByteArray
 {
+private:
+    QMutex  mutex_flag;
+
 public:
     cpu_memory(QByteArray& arr)
-        : QByteArray(arr)
-    {}
+        : QByteArray(arr),
+          extended_memory((8 * 1024), 0x00)
+    {
+        this->append(extended_memory);
+    }
 
 public:
     uint8_t get_u8(int offset) {
-        return this->operator [](offset);
+        mutex_flag.lock();
+        uint8_t val = this->operator [](offset);
+        mutex_flag.unlock();
+
+        return val;
     }
 
     void set_u8(int offset, uint8_t val) {
+        mutex_flag.lock();
         this->operator [](offset) = val;
+        mutex_flag.unlock();
     }
 
     uint16_t get_u16(int offset) {
-        return this->operator [](offset);
+        mutex_flag.lock();
+        uint8_t lbit = this->operator[](offset);
+        uint8_t hbit = this->operator[](offset+1);
+        uint16_t val = ((hbit << 8) | lbit);
+        mutex_flag.unlock();
+
+        return val;
     }
 
     void set_u16(uint16_t addr, uint8_t hbit, uint8_t lbit) {
+        mutex_flag.lock();
         this->operator []((int) addr) = lbit;
         this->operator []((int) addr+1) = hbit;
+        mutex_flag.unlock();
+    }
+
+    QByteArray copy_video_memory() {
+        return mid(0x2400, 0x3FFF);
     }
 
     void set_u16(uint16_t addr, uint16_t val) {
+        mutex_flag.lock();
         uint8_t lbit = (uint8_t) (val & 0x00FF);
         uint8_t hbit = (uint8_t) ((val >> 8) & 0x00FF);
 
         this->operator []((int) addr) = lbit;
         this->operator []((int) addr+1) = hbit;
+        mutex_flag.unlock();
     }
+
+private:
+    QByteArray      extended_memory;
 };
 
 class cpu_core_status_flags
 {
 public:
     cpu_core_status_flags()
+        : z_flag(0),
+          s_flag(0),
+          p_flag(0),
+          c_flag(0),
+          ac_flag(0)
     {}
 
 public:
@@ -71,8 +106,25 @@ public:
         ac_flag = (res & 0x10) ? 1 : 0;
     }
 
-    void set_psw(uint8_t psw) {}
-    uint8_t get_psw() { return 0; }
+    void set_psw(uint8_t psw) {
+        c_flag = ((psw & 0x01) != 0);
+        p_flag = ((psw & 0x04) != 0);
+        ac_flag = ((psw & 0x10) != 0);
+        z_flag = ((psw & 0x40) != 0);
+        s_flag = ((psw & 0x80) != 0);
+    }
+
+    uint8_t get_psw() {
+        uint8_t psw = 0x00;
+
+        psw |= c_flag << 0;
+        psw |= p_flag << 2;
+        psw |= ac_flag << 4;
+        psw |= z_flag << 6;
+        psw |= s_flag << 7;
+
+        return psw;
+    }
 
 
 private:
@@ -85,6 +137,19 @@ private:
 
 class cpu_core
 {
+public:
+    cpu_core()
+        : reg_b(0),
+        reg_c(0),
+        reg_d(0),
+        reg_e(0),
+        reg_h(0),
+        reg_l(0),
+        accumulator(0),
+        stack_pointer(0),
+        program_counter(0)
+    {}
+
 public:
     /* program counter */
     uint16_t get_pc() const      { return program_counter; }
@@ -124,38 +189,49 @@ private:
     uint16_t stack_pointer;
 };
 
+class cpu_debug {
+
+    public:
+        QString curr_opcode_cmd;
+        QString post_opcode_cmd;
+        cpu_core curr_core;
+        cpu_core post_core;
+        cpu_core_status_flags curr_core_flags;
+        cpu_core_status_flags post_core_flags;
+};
+
 class cpu
 {
 public:
     cpu(cpu_memory&);
 
+private:
+    void init();
+    uint8_t extract_interrupt_opcode();
+
 public:
     void execute();
-
-public:
-    void interrupt(int);
+    void single_step(cpu_debug&);
+    void interrupt(unsigned long);
 
     void push_u16_on_the_stack(uint16_t);
-    uint16_t pop_u16_from_the_stack();
-
     void push_on_the_stack(uint8_t);
+    uint16_t pop_u16_from_the_stack();
     uint8_t pop_from_the_stack();
+    void enable_interrupt(bool en);
+    void cpu_running(bool en);
 
-    void enable_interrupt(bool en) {
-        interrupt_enable = en;
-    }
-
-    void cpu_running(bool en) {
-        is_running = en;
-    }
 
 private:
-    cpu_memory& memory;
+    cpu_memory&             memory;
 
     cpu_core                core;
     cpu_core_status_flags   flags;
     bool                    interrupt_enable;
     bool                    is_running;
+    bool                    is_interrupted;
+    unsigned long           interrupt_command;
+
 
     map<uint8_t, opcodes*>  opcode_table;
 
@@ -174,12 +250,17 @@ public:
     invaders();
 
 public:
+    void reset();
+    void step(cpu_debug&);
+
+    QByteArray get_screen_buffer();
     void screen_interrupt();
 
 private:
     cpu         *cpu_8080;
     cpu_memory  *memory;
     QFile       rom_image;
+    bool        is_running;
 public:
     void run() override;
 };
