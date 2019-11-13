@@ -32,11 +32,22 @@ SOURCES += \
     invaders.cpp \
     cpu.cpp \
     nop_opcode.cpp \
-    carry_bit_opcode.cpp \
-    single_register_opcodes.cpp \
     register_pair_opcodes.cpp \
     rotate_acc_opcodes.cpp \
-    jump_opcodes.cpp
+    jmp_opcode.cpp \
+    call_opcode.cpp \
+    ret_opcode.cpp \
+    direct_addr_opcode.cpp \
+    interrupt_flipflop_opcode.cpp \
+    immediate_opcode.cpp \
+    reg_or_mem_to_acc_opcode.cpp \
+    acc_instructions.cpp \
+    data_transfer_opcodes.cpp \
+    rst_opcode.cpp \
+    io_opcode.cpp \
+    single_register_opcodes.cpp \
+    carry_bit_opcode.cpp \
+    hlt_opcode.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -44,7 +55,21 @@ HEADERS += \
     opcodes.h \
     register_pair_opcodes.h \
     rotate_acc_opcodes.h \
-    jmp_opcode.h
+    jmp_opcode.h \
+    call_opcode.h \
+    ret_opcode.h \
+    direct_addr_opcode.h \
+    interrupt_flipflop_opcode.h \
+    immediate_opcode.h \
+    reg_or_mem_to_acc_opcode.h \
+    acc_instructions.h \
+    data_transfer_opcodes.h \
+    rst_opcode.h \
+    io_opcode.h \
+    single_register_opcodes.h \
+    carry_bit_opcode.h \
+    hlt_opcode.h \
+    nop_opcode.h
 
 FORMS += \
         mainwindow.ui

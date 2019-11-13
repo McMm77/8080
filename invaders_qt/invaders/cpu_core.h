@@ -21,6 +21,8 @@ public:
           extended_memory((8 * 1024), 0x00)
     {
         this->append(extended_memory);
+        this->operator [](0x20c1) = 2;
+        this->arr_size = this->size();
     }
 
 public:
@@ -33,6 +35,9 @@ public:
     }
 
     void set_u8(int offset, uint8_t val) {
+        if(offset == 92) {
+            offset = 0;
+        }
         mutex_flag.lock();
         this->operator [](offset) = val;
         mutex_flag.unlock();
@@ -71,6 +76,7 @@ public:
 
 private:
     QByteArray      extended_memory;
+    int arr_size;
 };
 
 class cpu_core_status_flags
@@ -153,8 +159,22 @@ public:
 public:
     /* program counter */
     uint16_t get_pc() const      { return program_counter; }
-    void increase_pc(uint16_t n) { program_counter += n;   }
-    void set_pc_to(uint16_t cnt) { program_counter = cnt;  }
+    void increase_pc(uint16_t n) {
+        uint16_t temp_pc = program_counter;
+        program_counter += n;
+        if (program_counter >= 0x1A8E)
+            temp_pc = 12;
+    }
+
+    void set_pc_to(uint16_t cnt)
+    {
+        uint16_t temp_pc = program_counter;
+        if( cnt > 0x1A8E ) {
+            program_counter++;
+        }
+
+        program_counter = cnt;
+    }
 
     /* stack_pointer */
     void set_sp(uint16_t cnt)    { stack_pointer = cnt;    }
@@ -251,11 +271,13 @@ public:
 
 public:
     void reset();
-    void step(cpu_debug&);
+    void step(cpu_debug&, int nSteps);
+    void step_to(cpu_debug &debug_info, uint16_t pc_counter);
 
     QByteArray get_screen_buffer();
+    uint8_t get_pixel(int);
     void screen_interrupt();
-
+    void rst_interrupt(int);
 private:
     cpu         *cpu_8080;
     cpu_memory  *memory;

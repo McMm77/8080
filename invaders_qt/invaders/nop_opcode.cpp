@@ -1,4 +1,4 @@
-#include "opcodes.h"
+#include "nop_opcode.h"
 #include "cpu_core.h"
 
 nop_opcode::nop_opcode()

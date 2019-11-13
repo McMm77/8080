@@ -1,8 +1,20 @@
-#include "opcodes.h"
+#include "single_register_opcodes.h"
 #include "cpu_core.h"
 
+cma_opcode::cma_opcode()
+        : opcodes(1, 4, 4, "CMA")
+{}
+
+void cma_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint8_t reg_a = cpu_8080.core_p().get_reg_a();
+    cpu_8080.core_p().set_reg_a(~reg_a);
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
 inr_opcode::inr_opcode(QString ass_cmd)
-    : opcodes(2, 4, 4, ass_cmd)
+    : opcodes(1, 5, 5, ass_cmd)
 {}
 
 void inr_opcode::inr(cpu &cpu_8080, uint8_t& val)
@@ -35,7 +47,7 @@ void inr_c_opcode::handle_opcode(cpu &cpu_8080)
 {
     uint8_t reg_c = cpu_8080.core_p().get_reg_c();
     inr(cpu_8080, reg_c);
-    cpu_8080.core_p().set_reg_c(reg_c);
+   cpu_8080.core_p().set_reg_c(reg_c);
 
     cpu_8080.core_p().increase_pc(instr_size());
 }
@@ -124,7 +136,7 @@ void inr_a_opcode::handle_opcode(cpu &cpu_8080)
 // ---------------------------------------------------
 // DCR Opcodes
 dcr_opcode::dcr_opcode(QString ass_cmd)
-    : opcodes(2, 4, 4, ass_cmd)
+    : opcodes(1, 5, 5, ass_cmd)
 {}
 
 void dcr_opcode::dcr(cpu &cpu_8080, uint8_t& val)
@@ -239,6 +251,30 @@ void dcr_a_opcode::handle_opcode(cpu &cpu_8080)
     uint8_t reg = cpu_8080.core_p().get_reg_a();
     dcr(cpu_8080, reg);
     cpu_8080.core_p().set_reg_a(reg);
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
+
+daa_opcode::daa_opcode()
+    : opcodes(1, 4, 4, "DAA")
+{}
+
+void daa_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint8_t reg_a = cpu_8080.core_p().get_reg_a();
+    uint8_t lb_acc = reg_a & 0x0F;
+
+    if (lb_acc > 9 || cpu_8080.core_flag().get_ac_flag()) {
+        cpu_8080.core_flag().set_ac_flag(reg_a, 6);
+        cpu_8080.core_p().set_reg_a(reg_a + 6);
+    }
+
+    reg_a = cpu_8080.core_p().get_reg_a();
+    uint8_t hb_acc = (reg_a >> 4) & 0x0F;
+
+    if (hb_acc > 9 || cpu_8080.core_flag().get_c_flag()) {
+        cpu_8080.core_flag().set_c_flag(hb_acc, 6);
+    }
 
     cpu_8080.core_p().increase_pc(instr_size());
 }

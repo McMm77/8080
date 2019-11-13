@@ -1,5 +1,6 @@
-#include "opcodes.h"
+#include "carry_bit_opcode.h"
 #include "cpu_core.h"
+
 
 cmc_opcode::cmc_opcode()
     : opcodes(1, 4, 4, "CMC")
@@ -24,4 +25,3 @@ void stc_opcode::handle_opcode(cpu &cpu_8080)
 
     cpu_8080.core_p().increase_pc(instr_size());
 }
-

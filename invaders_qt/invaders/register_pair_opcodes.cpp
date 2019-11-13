@@ -2,7 +2,7 @@
 #include "cpu_core.h"
 
 inx_opcode::inx_opcode(QString ass_cmd)
-    : opcodes(1, 4, 4, ass_cmd)
+    : opcodes(1, 5, 5, ass_cmd)
 {}
 
 void inx_opcode::inx(uint8_t &hbit, uint8_t &lbit)
@@ -77,7 +77,7 @@ void inx_sp_opcode::handle_opcode(cpu &cpu_8080)
 }
 
 dcx_opcode::dcx_opcode(QString ass_cmd)
-    : opcodes(1, 4, 4, ass_cmd)
+    : opcodes(1, 5, 5, ass_cmd)
 {}
 
 void dcx_opcode::dcx(uint8_t& hbit, uint8_t& lbit)
@@ -154,7 +154,7 @@ void dcx_sp_opcode::handle_opcode(cpu &cpu_8080)
 
 // --------------------------------
 pop_opcode::pop_opcode(QString ass_cmd)
-    : opcodes(1, 4, 4, ass_cmd)
+    : opcodes(1, 10, 10, ass_cmd)
 {}
 
 pop_b_opcode::pop_b_opcode()
@@ -207,7 +207,7 @@ void pop_psw_opcode::handle_opcode(cpu &cpu_8080)
 
 // -----------------------------------------
 push_opcode::push_opcode(QString ass_cmd)
-    : opcodes(1, 4, 4, ass_cmd)
+    : opcodes(1, 10, 10, ass_cmd)
 {}
 
 push_b_opcode::push_b_opcode()
@@ -259,46 +259,133 @@ void push_psw_opcode::handle_opcode(cpu &cpu_8080)
 }
 
 dad_opcode::dad_opcode(QString ass_cmd)
-    : opcodes(1, 4, 4, ass_cmd)
+    : opcodes(1, 10, 10, ass_cmd)
 {}
 
 dad_b_opcode::dad_b_opcode()
     : dad_opcode("DAD B")
 {}
 
-void dad_b_opcode::handle_opcode(cpu&)
-{}
+void dad_b_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint8_t bc_lval = cpu_8080.core_p().get_reg_c();
+    uint8_t bc_hval = cpu_8080.core_p().get_reg_b();
+    uint16_t bc_val = (bc_hval << 8) | bc_lval;
+
+    uint8_t hl_lval = cpu_8080.core_p().get_reg_l();
+    uint8_t hl_hval = cpu_8080.core_p().get_reg_h();
+    uint16_t hl_val = (hl_hval << 8) | hl_lval;
+
+    uint32_t prod = bc_val + hl_val;
+
+    uint8_t c_flag = ((prod & 0x00010000) != 0);
+    cpu_8080.core_flag().set_c_flag(c_flag);
+
+    uint8_t h_bit = (prod >> 8) & 0xFF;
+    uint8_t l_bit = prod & 0xFF;
+
+    cpu_8080.core_p().set_reg_l(l_bit);
+    cpu_8080.core_p().set_reg_h(h_bit);
+
+    cpu_8080.core_p().increase_pc(instr_size());
+
+}
 
 dad_d_opcode::dad_d_opcode()
     : dad_opcode("DAD D")
 {}
 
-void dad_d_opcode::handle_opcode(cpu&)
-{}
+void dad_d_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint8_t bc_lval = cpu_8080.core_p().get_reg_e();
+    uint8_t bc_hval = cpu_8080.core_p().get_reg_d();
+    uint16_t bc_val = (bc_hval << 8) | bc_lval;
+
+    uint8_t hl_lval = cpu_8080.core_p().get_reg_l();
+    uint8_t hl_hval = cpu_8080.core_p().get_reg_h();
+    uint16_t hl_val = (hl_hval << 8) | hl_lval;
+
+    uint32_t prod = bc_val + hl_val;
+
+    uint8_t c_flag = ((prod & 0x00010000) != 0);
+    cpu_8080.core_flag().set_c_flag(c_flag);
+
+    uint8_t h_bit = (prod >> 8) & 0xFF;
+    uint8_t l_bit = prod & 0xFF;
+
+    cpu_8080.core_p().set_reg_l(l_bit);
+    cpu_8080.core_p().set_reg_h(h_bit);
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
 
 dad_h_opcode::dad_h_opcode()
     : dad_opcode("DAD H")
-{}
+{
 
-void dad_h_opcode::handle_opcode(cpu&)
-{}
+}
+
+void dad_h_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint8_t bc_lval = cpu_8080.core_p().get_reg_l();
+    uint8_t bc_hval = cpu_8080.core_p().get_reg_h();
+    uint16_t bc_val = (bc_hval << 8) | bc_lval;
+
+    uint8_t hl_lval = cpu_8080.core_p().get_reg_l();
+    uint8_t hl_hval = cpu_8080.core_p().get_reg_h();
+    uint16_t hl_val = (hl_hval << 8) | hl_lval;
+
+    uint32_t prod = bc_val + hl_val;
+
+    uint8_t c_flag = ((prod & 0x00010000) != 0);
+    cpu_8080.core_flag().set_c_flag(c_flag);
+
+    uint8_t h_bit = (prod >> 8) & 0xFF;
+    uint8_t l_bit = prod & 0xFF;
+
+    cpu_8080.core_p().set_reg_l(l_bit);
+    cpu_8080.core_p().set_reg_h(h_bit);
+
+    cpu_8080.core_p().increase_pc(instr_size());
+
+}
 
 dad_sp_opcode::dad_sp_opcode()
     : dad_opcode("DAD SP")
 {}
 
-void dad_sp_opcode::handle_opcode(cpu&)
-{}
+void dad_sp_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t bc_val = cpu_8080.core_p().get_sp();
+
+    uint8_t hl_lval = cpu_8080.core_p().get_reg_l();
+    uint8_t hl_hval = cpu_8080.core_p().get_reg_h();
+    uint16_t hl_val = (hl_hval << 8) | hl_lval;
+
+    uint32_t prod = bc_val + hl_val;
+
+    uint8_t c_flag = ((prod & 0x00010000) != 0);
+    cpu_8080.core_flag().set_c_flag(c_flag);
+
+    uint8_t h_bit = (prod >> 8) & 0xFF;
+    uint8_t l_bit = prod & 0xFF;
+
+    cpu_8080.core_p().set_reg_l(l_bit);
+    cpu_8080.core_p().set_reg_h(h_bit);
+
+    cpu_8080.core_p().increase_pc(instr_size());
+
+}
 
 sphl_opcode::sphl_opcode()
-    : opcodes(1, 4, 4, "SPHL")
+    : opcodes(1, 5, 5, "SPHL")
 {}
 
 void sphl_opcode::handle_opcode(cpu&)
 {}
 
 xchg_opcode::xchg_opcode()
-    : opcodes(1, 4, 4, "XCHG")
+    : opcodes(1, 5, 5, "XCHG")
 {}
 
 void xchg_opcode::handle_opcode(cpu &cpu_8080)
@@ -315,7 +402,7 @@ void xchg_opcode::handle_opcode(cpu &cpu_8080)
 }
 
 xthl_opcode::xthl_opcode()
-    : opcodes(1, 4, 4, "XTHL")
+    : opcodes(1, 5, 5, "XTHL")
 {}
 
 void xthl_opcode::handle_opcode(cpu &cpu_8080)

@@ -2,6 +2,19 @@
 #include "register_pair_opcodes.h"
 #include "rotate_acc_opcodes.h"
 #include "jmp_opcode.h"
+#include "call_opcode.h"
+#include "ret_opcode.h"
+#include "direct_addr_opcode.h"
+#include "interrupt_flipflop_opcode.h"
+#include "immediate_opcode.h"
+#include "reg_or_mem_to_acc_opcode.h"
+#include "rst_opcode.h"
+#include "data_transfer_opcodes.h"
+#include "io_opcode.h"
+#include "single_register_opcodes.h"
+#include "hlt_opcode.h"
+#include "carry_bit_opcode.h"
+#include "nop_opcode.h"
 
 void cpu::init() {
     this->opcode_table[0x00] = new nop_opcode();
@@ -315,12 +328,14 @@ void cpu::single_step(cpu_debug& debug_info)
 
 void cpu::execute()
 {
+    static int counter = 0;
     uint8_t opcode = 0x00;
 
     while(core.get_pc() < memory.size())
     {
         if (is_interrupted) {
             is_interrupted = false;
+            counter++;
             opcode = extract_interrupt_opcode();
         }
 
@@ -329,7 +344,15 @@ void cpu::execute()
         }
 
         opcodes *ptr = opcode_table[opcode];
+
+        if(core.get_pc() >= 0x1A8E) {
+            counter++;
+        }
         ptr->handle_opcode(*this);
+
+        if(core.get_pc() >= 0x1A90) {
+            counter++;
+        }
 
     }
 }

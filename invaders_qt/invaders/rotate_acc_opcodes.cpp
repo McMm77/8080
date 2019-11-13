@@ -49,6 +49,8 @@ void rrc_opcode::handle_opcode(cpu &cpu_8080)
     reg_a |= (lbit << 7);
 
     cpu_8080.core_flag().set_c_flag(lbit);
+
+    cpu_8080.core_p().increase_pc(instr_size());
 }
 
 ral_opcode::ral_opcode()

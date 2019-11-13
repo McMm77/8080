@@ -6,6 +6,10 @@ invaders::invaders()
 {
 }
 
+uint8_t invaders::get_pixel(int offset) {
+    offset += 0x2400;
+    return memory->get_u8(offset);
+}
 QByteArray invaders::get_screen_buffer() {
     return memory->copy_video_memory();
 }
@@ -18,7 +22,7 @@ void invaders::reset()
     is_running = false;
 }
 
-void invaders::step(cpu_debug& debug_info)
+void invaders::step_to(cpu_debug &debug_info, uint16_t pc_counter)
 {
     if(!is_running) {
         if( rom_image.open(QIODevice::ReadOnly | QIODevice::Unbuffered) == true) {
@@ -31,7 +35,34 @@ void invaders::step(cpu_debug& debug_info)
         }
     }
 
-    return cpu_8080->single_step(debug_info);
+    while(cpu_8080->core_p().get_pc() != pc_counter) {
+        cpu_8080->single_step(debug_info);
+    }
+}
+
+void invaders::step(cpu_debug& debug_info, int nSteps = 1)
+{
+    if(!is_running) {
+        if( rom_image.open(QIODevice::ReadOnly | QIODevice::Unbuffered) == true) {
+
+            QByteArray arr = rom_image.readAll();
+            memory = new cpu_memory(arr);
+            cpu_8080 = new cpu(*memory);
+
+            is_running = true;
+        }
+    }
+
+    for(int n = 0 ; n < nSteps ; n++)   {
+        cpu_8080->single_step(debug_info);
+    }
+}
+
+void invaders::rst_interrupt(int reset_number) {
+    uint8_t offset = 0xC7;
+    uint8_t rst_opcode = offset + (reset_number * 8);
+
+    cpu_8080->interrupt(rst_opcode);
 }
 
 void invaders::screen_interrupt() {

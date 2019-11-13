@@ -3,6 +3,15 @@
 
 #include "opcodes.h"
 
+class pchl_opcode : public opcodes
+{
+public:
+    pchl_opcode();
+
+public:
+    void handle_opcode(cpu&);
+};
+
 class jmp_opcode : public opcodes
 {
 public:
