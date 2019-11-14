@@ -79,11 +79,14 @@ void invaders::screen_interrupt() {
 void invaders::run() {
 
        if( rom_image.open(QIODevice::ReadOnly | QIODevice::Unbuffered) == true) {
+           QFile myFile("/home/meijemac/log.log");
+
+           bool flag = myFile.open(QIODevice::WriteOnly | QIODevice::Text);
 
            QByteArray arr = rom_image.readAll();
            memory = new cpu_memory(arr);
            cpu_8080 = new cpu(*memory);
 
-           cpu_8080->execute();
+           cpu_8080->execute(myFile);
        }
 }

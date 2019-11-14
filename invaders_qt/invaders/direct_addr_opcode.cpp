@@ -8,7 +8,9 @@ sta_opcode::sta_opcode()
 void sta_opcode::handle_opcode(cpu& cpu_8080)
 {
     uint16_t addr = cpu_8080.rom().get_u16(cpu_8080.core_p().get_pc() + 1);
-    cpu_8080.core_p().set_reg_a(cpu_8080.rom()[addr]);
+    uint8_t reg_a = cpu_8080.core_p().get_reg_a();
+//    cpu_8080.core_p().set_reg_a(cpu_8080.rom()[addr]);
+    cpu_8080.rom().set_u8(addr, reg_a);
     cpu_8080.core_p().increase_pc(instr_size());
 }
 
@@ -20,7 +22,7 @@ void lda_opcode::handle_opcode(cpu &cpu_8080)
 {
     uint16_t addr = cpu_8080.rom().get_u16(cpu_8080.core_p().get_pc()+1);
 
-    cpu_8080.core_p().set_reg_a(cpu_8080.rom().get_u16(addr));
+    cpu_8080.core_p().set_reg_a(cpu_8080.rom().get_u8(addr));
 
     cpu_8080.core_p().increase_pc(instr_size());
 }
@@ -33,8 +35,10 @@ void shld_opcode::handle_opcode(cpu &cpu_8080)
 {
     uint16_t addr = cpu_8080.rom().get_u16(cpu_8080.core_p().get_pc()+1);
 
-    cpu_8080.core_p().set_reg_l(addr);
-    cpu_8080.core_p().set_reg_h(addr+1);
+    cpu_8080.rom().set_u8(addr, cpu_8080.core_p().get_reg_l());
+    cpu_8080.rom().set_u8(addr+1, cpu_8080.core_p().get_reg_h());
+//    cpu_8080.core_p().set_reg_l(addr);
+//    cpu_8080.core_p().set_reg_h(addr+1);
 
     cpu_8080.core_p().increase_pc(instr_size());
 }
@@ -48,7 +52,7 @@ void lhld_opcode::handle_opcode(cpu &cpu_8080)
     uint16_t addr = cpu_8080.rom().get_u16(cpu_8080.core_p().get_pc()+1);
 
     cpu_8080.core_p().set_reg_l(cpu_8080.rom().get_u8(addr));
-    cpu_8080.core_p().set_reg_l(cpu_8080.rom().get_u8(addr+1));
+    cpu_8080.core_p().set_reg_h(cpu_8080.rom().get_u8(addr+1));
 
     cpu_8080.core_p().increase_pc(instr_size());
 }

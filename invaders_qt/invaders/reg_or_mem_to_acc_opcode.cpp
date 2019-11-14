@@ -74,7 +74,7 @@ add_m_opcode::add_m_opcode()
 void add_m_opcode::handle_opcode(cpu &cpu_8080)
 {
     uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
-    add(cpu_8080, cpu_8080.rom().get_u16(addr));
+    add(cpu_8080, cpu_8080.rom().get_u8(addr));
 
     cpu_8080.core_p().increase_pc(instr_size());
 }
@@ -162,7 +162,7 @@ adc_m_opcode::adc_m_opcode()
 void adc_m_opcode::handle_opcode(cpu &cpu_8080)
 {
     uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
-    adc(cpu_8080, cpu_8080.rom().get_u16(addr));
+    adc(cpu_8080, cpu_8080.rom().get_u8(addr));
 
     cpu_8080.core_p().increase_pc(instr_size());
 }
@@ -250,7 +250,7 @@ sub_m_opcode::sub_m_opcode()
 void sub_m_opcode::handle_opcode(cpu &cpu_8080)
 {
     uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
-    sub(cpu_8080, cpu_8080.rom().get_u16(addr));
+    sub(cpu_8080, cpu_8080.rom().get_u8(addr));
 
     cpu_8080.core_p().increase_pc(instr_size());
 }
@@ -338,7 +338,7 @@ sbb_m_opcode::sbb_m_opcode()
 void sbb_m_opcode::handle_opcode(cpu &cpu_8080)
 {
     uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
-    sbb(cpu_8080, cpu_8080.rom().get_u16(addr));
+    sbb(cpu_8080, cpu_8080.rom().get_u8(addr));
 
     cpu_8080.core_p().increase_pc(instr_size());
 }
@@ -426,7 +426,7 @@ ana_m_opcode::ana_m_opcode()
 void ana_m_opcode::handle_opcode(cpu &cpu_8080)
 {
     uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
-    ana(cpu_8080, cpu_8080.rom().get_u16(addr));
+    ana(cpu_8080, cpu_8080.rom().get_u8(addr));
 
     cpu_8080.core_p().increase_pc(instr_size());
 }
@@ -514,7 +514,7 @@ xra_m_opcode::xra_m_opcode()
 void xra_m_opcode::handle_opcode(cpu &cpu_8080)
 {
     uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
-    xra(cpu_8080, cpu_8080.rom().get_u16(addr));
+    xra(cpu_8080, cpu_8080.rom().get_u8(addr));
 
     cpu_8080.core_p().increase_pc(instr_size());
 }
@@ -602,7 +602,7 @@ ora_m_opcode::ora_m_opcode()
 void ora_m_opcode::handle_opcode(cpu &cpu_8080)
 {
     uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
-    ora(cpu_8080, cpu_8080.rom().get_u16(addr));
+    ora(cpu_8080, cpu_8080.rom().get_u8(addr));
 
     cpu_8080.core_p().increase_pc(instr_size());
 }
@@ -690,7 +690,7 @@ cmp_m_opcode::cmp_m_opcode()
 void cmp_m_opcode::handle_opcode(cpu &cpu_8080)
 {
     uint16_t addr = (cpu_8080.core_p().get_reg_h() << 8) | cpu_8080.core_p().get_reg_l();
-    cmp(cpu_8080, cpu_8080.rom().get_u16(addr));
+    cmp(cpu_8080, cpu_8080.rom().get_u8(addr));
 
     cpu_8080.core_p().increase_pc(instr_size());
 }

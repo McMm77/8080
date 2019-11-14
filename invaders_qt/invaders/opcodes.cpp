@@ -27,6 +27,7 @@ QString opcodes::convert_opcode_to_assembly(cpu& cpu_8080, uint16_t temp_pc)
         cmd.append(" $");
         cmd.append(par_str);
     }
+
     else if (size == 3) {
         uint16_t par = cpu_8080.rom().get_u16(temp_pc + 1);
         par_str.sprintf("%04xH", par);

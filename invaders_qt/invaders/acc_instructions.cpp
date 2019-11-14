@@ -115,12 +115,13 @@ void ora_instr::ora(cpu &cpu_8080, uint8_t val)
 
 void cmp_instr::cmp(cpu &cpu_8080, uint8_t val)
 {
+    uint8_t two_qu = ~val + 1;
     uint8_t reg_a = cpu_8080.core_p().get_reg_a();
 
-    cpu_8080.core_flag().set_c_flag(reg_a, val);
-    cpu_8080.core_flag().set_ac_flag(reg_a, val);
+    cpu_8080.core_flag().set_c_flag(reg_a, two_qu);
+    cpu_8080.core_flag().set_ac_flag(reg_a, two_qu);
 
-    reg_a += val;
+    reg_a += two_qu;
 
     cpu_8080.core_flag().set_p_flag(reg_a);
     cpu_8080.core_flag().set_z_flag(reg_a);

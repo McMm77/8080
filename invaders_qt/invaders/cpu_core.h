@@ -21,12 +21,13 @@ public:
           extended_memory((8 * 1024), 0x00)
     {
         this->append(extended_memory);
-        this->operator [](0x20c1) = 2;
+//        this->operator [](0x20c1) = 2;
         this->arr_size = this->size();
     }
 
 public:
     uint8_t get_u8(int offset) {
+
         mutex_flag.lock();
         uint8_t val = this->operator [](offset);
         mutex_flag.unlock();
@@ -34,16 +35,20 @@ public:
         return val;
     }
 
-    void set_u8(int offset, uint8_t val) {
-        if(offset == 92) {
-            offset = 0;
-        }
+    void set_u8(int addr, uint8_t val) {
+
+        if(addr <= 0x1FFF)
+            throw "Write Inside Rom";
+
+//        Q_ASSERT(addr > 0x1FFF);
+
         mutex_flag.lock();
-        this->operator [](offset) = val;
+        this->operator [](addr) = val;
         mutex_flag.unlock();
     }
 
     uint16_t get_u16(int offset) {
+
         mutex_flag.lock();
         uint8_t lbit = this->operator[](offset);
         uint8_t hbit = this->operator[](offset+1);
@@ -53,25 +58,8 @@ public:
         return val;
     }
 
-    void set_u16(uint16_t addr, uint8_t hbit, uint8_t lbit) {
-        mutex_flag.lock();
-        this->operator []((int) addr) = lbit;
-        this->operator []((int) addr+1) = hbit;
-        mutex_flag.unlock();
-    }
-
     QByteArray copy_video_memory() {
         return mid(0x2400, 0x3FFF);
-    }
-
-    void set_u16(uint16_t addr, uint16_t val) {
-        mutex_flag.lock();
-        uint8_t lbit = (uint8_t) (val & 0x00FF);
-        uint8_t hbit = (uint8_t) ((val >> 8) & 0x00FF);
-
-        this->operator []((int) addr) = lbit;
-        this->operator []((int) addr+1) = hbit;
-        mutex_flag.unlock();
     }
 
 private:
@@ -120,7 +108,7 @@ public:
         s_flag = ((psw & 0x80) != 0);
     }
 
-    uint8_t get_psw() {
+    uint8_t get_psw() {https://wroclaw.wyborcza.pl/wroclaw/7,35771,25405066,wroclawski-pionier-nanoczasteczek-rozpoczal-wspolprace-z-gigantem.html
         uint8_t psw = 0x00;
 
         psw |= c_flag << 0;
@@ -230,7 +218,7 @@ private:
     uint8_t extract_interrupt_opcode();
 
 public:
-    void execute();
+    void execute(QFile&);
     void single_step(cpu_debug&);
     void interrupt(unsigned long);
 

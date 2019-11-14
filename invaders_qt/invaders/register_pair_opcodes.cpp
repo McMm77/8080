@@ -200,7 +200,7 @@ pop_psw_opcode::pop_psw_opcode()
 void pop_psw_opcode::handle_opcode(cpu &cpu_8080)
 {
     cpu_8080.core_flag().set_psw(cpu_8080.pop_from_the_stack());
-    cpu_8080.core_p().set_reg_h(cpu_8080.pop_from_the_stack());
+    cpu_8080.core_p().set_reg_a(cpu_8080.pop_from_the_stack());
 
     cpu_8080.core_p().increase_pc(instr_size());
 }
@@ -217,7 +217,7 @@ push_b_opcode::push_b_opcode()
 void push_b_opcode::handle_opcode(cpu &cpu_8080)
 {
     cpu_8080.push_on_the_stack(cpu_8080.core_p().get_reg_b());
-    cpu_8080.push_on_the_stack(cpu_8080.core_p().get_reg_b());
+    cpu_8080.push_on_the_stack(cpu_8080.core_p().get_reg_c());
 
     cpu_8080.core_p().increase_pc(instr_size());
 }
@@ -408,11 +408,15 @@ xthl_opcode::xthl_opcode()
 void xthl_opcode::handle_opcode(cpu &cpu_8080)
 {
     uint16_t stack_addr = cpu_8080.core_p().get_sp();
+    uint16_t l_stack = cpu_8080.rom().get_u8(stack_addr);
+    uint16_t h_stack = cpu_8080.rom().get_u8(stack_addr+1);
     uint8_t l_bit = cpu_8080.core_p().get_reg_l();
     uint8_t h_bit = cpu_8080.core_p().get_reg_h();
 
     cpu_8080.rom().set_u8(stack_addr, l_bit);
     cpu_8080.rom().set_u8(stack_addr+1, h_bit);
+    cpu_8080.core_p().set_reg_l(l_stack);
+    cpu_8080.core_p().set_reg_h(h_stack);
 
     cpu_8080.core_p().increase_pc(instr_size());
 }

@@ -70,7 +70,7 @@ MainWindow::~MainWindow()
 void MainWindow::handleEmulationTrigger()
 {
     invader.start();
-    update_screen_timer->start(17);
+    update_screen_timer->start(34);
 }
 
 void MainWindow::handleDebugStepButton() {
@@ -192,10 +192,25 @@ void MainWindow::update_cpu_core_data(cpu_debug &debug)
 
 void MainWindow::draw_screen() {
     int screen_x = 224; int screen_y = 256; int counter = 0;
+    screen_x--; screen_y--;
 
-//    QByteArray  screen_buffer = invader.get_screen_buffer();
     QImage image = QImage(screen_x, screen_y, QImage::Format_RGB32);
 
+    for( int x = 0 ; x < screen_x ; x++) {
+        for(int y = screen_y ; y >= 0 ; y-=8) {
+            for (int i = 7 ; i >= 0 ; i--) {
+                uint8_t pixel = invader.get_pixel(counter);
+
+                if( pixel & (0x1 << i)) {
+                    image.setPixel(x, (y-i), qRgb(128, 128, 128));
+                }
+
+            }
+
+            counter++;
+        }
+    }
+/*
     for( int x = 0 ; x < screen_x ; x++) {
         for(int y = 0 ; y < screen_y ; y+=8) {
             for (int i = 0 ; i < 8 ; i++) {
@@ -204,17 +219,13 @@ void MainWindow::draw_screen() {
                 if( pixel & (0x1 << i)) {
                     image.setPixel(x, (y+i), qRgb(128, 128, 128));
                 }
-/*
-                if (screen_buffer[counter] & (0x1 << i)) {
-                    image.setPixel(x, (y+i), qRgb(128, 128, 128));
-                }
-*/
+
             }
 
             counter++;
         }
     }
-
+*/
     graphic->addPixmap(QPixmap::fromImage(image));
     ui->play_screen->setScene((graphic));
 }

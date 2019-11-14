@@ -8,7 +8,7 @@ stax_opcode::stax_opcode(QString ass_cmd)
 void stax_opcode::store_acc_to_mem(cpu &cpu_8080, uint8_t reg_h, uint8_t reg_l)
 {
     uint16_t address = (reg_h << 8) | reg_l;
-    cpu_8080.rom().set_u16(address, cpu_8080.core_p().get_reg_a());
+    cpu_8080.rom().set_u8(address, cpu_8080.core_p().get_reg_a());
 }
 
 stax_b_opcode::stax_b_opcode()
@@ -40,7 +40,7 @@ ldax_opcode::ldax_opcode(QString ass_cmd)
 void ldax_opcode::retrieve_acc_from_mem(cpu &cpu_8080, uint8_t reg_h, uint8_t reg_l)
 {
     uint16_t address = (reg_h << 8) | reg_l;
-    cpu_8080.core_p().set_reg_a(cpu_8080.rom().get_u16(address));
+    cpu_8080.core_p().set_reg_a(cpu_8080.rom().get_u8(address));
 }
 
 ldax_b_opcode::ldax_b_opcode()
@@ -49,7 +49,7 @@ ldax_b_opcode::ldax_b_opcode()
 
 void ldax_b_opcode::handle_opcode(cpu &cpu_8080)
 {
-    retrieve_acc_from_mem(cpu_8080, cpu_8080.core_p().get_reg_d(), cpu_8080.core_p().get_reg_e());
+    retrieve_acc_from_mem(cpu_8080, cpu_8080.core_p().get_reg_b(), cpu_8080.core_p().get_reg_c());
 
     cpu_8080.core_p().increase_pc(instr_size());
 }

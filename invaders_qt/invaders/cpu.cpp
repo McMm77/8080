@@ -326,34 +326,93 @@ void cpu::single_step(cpu_debug& debug_info)
     }
 }
 
-void cpu::execute()
+static QString mcm_convert_to_hex_u8(uint8_t reg_val)
 {
-    static int counter = 0;
+    QString number;
+
+    number.sprintf("0x%02x", reg_val);
+    return number;
+}
+
+static QString mcm_convert_to_hex_u16(uint16_t reg_val)
+{
+    QString number;
+
+    number.sprintf("0x%04x", reg_val);
+    return number;
+}
+
+
+void cpu::execute(QFile& log_file)
+{
     uint8_t opcode = 0x00;
 
-    while(core.get_pc() < memory.size())
+    try {
+
+        while(core.get_pc() < memory.size())
+        {
+            cpu_debug   debug_info;
+
+            if (is_interrupted) {
+                is_interrupted = false;
+                opcode = extract_interrupt_opcode();
+            }
+
+            else {
+                opcode = memory[core.get_pc()];
+            }
+
+            opcodes *ptr = opcode_table[opcode];
+            QString ass_cmd("\n-----------------------------------\n");
+
+            ptr->store_pre_debug_data(*this, debug_info);
+            ptr->handle_opcode(*this);
+            ptr->store_post_debug_data(*this, debug_info);
+
+            // Log to file
+
+            ass_cmd.append(debug_info.curr_opcode_cmd);
+            ass_cmd.append("\n\t a:");
+            ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_a()));
+            ass_cmd.append('\n');
+
+            ass_cmd.append("\t b:");
+            ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_b()));
+            ass_cmd.append("\t c:");
+            ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_c()));
+            ass_cmd.append('\n');
+
+            ass_cmd.append("\t d:");
+            ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_d()));
+            ass_cmd.append("\t e:");
+            ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_e()));
+            ass_cmd.append('\n');
+
+            ass_cmd.append("\t h:");
+            ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_h()));
+            ass_cmd.append("\t l:");
+            ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_l()));
+            ass_cmd.append('\n');
+
+            uint16_t stack_ptr = this->core_p().get_sp();
+            for(int i = 0 ; i < 10 ; i++ ) {
+                ass_cmd.append("\n\n");
+                ass_cmd.append(mcm_convert_to_hex_u16(stack_ptr));
+                ass_cmd.append(": ");
+                uint16_t data = this->rom().get_u16(stack_ptr);
+                ass_cmd.append(mcm_convert_to_hex_u16(data));
+                stack_ptr++;
+            }
+
+            log_file.write(ass_cmd.toUtf8());
+
+
+        }
+    }
+
+    catch(...)
     {
-        if (is_interrupted) {
-            is_interrupted = false;
-            counter++;
-            opcode = extract_interrupt_opcode();
-        }
-
-        else {
-            opcode = memory[core.get_pc()];
-        }
-
-        opcodes *ptr = opcode_table[opcode];
-
-        if(core.get_pc() >= 0x1A8E) {
-            counter++;
-        }
-        ptr->handle_opcode(*this);
-
-        if(core.get_pc() >= 0x1A90) {
-            counter++;
-        }
-
+        log_file.close();
     }
 }
 
