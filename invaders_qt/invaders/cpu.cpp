@@ -16,7 +16,7 @@
 #include "carry_bit_opcode.h"
 #include "nop_opcode.h"
 
-void cpu::init() {
+void cpu::init(invaders& hw) {
     this->opcode_table[0x00] = new nop_opcode();
     this->opcode_table[0x01] = new lxi_b_opcode();
     this->opcode_table[0x02] = new stax_b_opcode();
@@ -228,7 +228,7 @@ void cpu::init() {
     this->opcode_table[0xD0] = new rnc_opcode();
     this->opcode_table[0xD1] = new pop_d_opcode();
     this->opcode_table[0xD2] = new jnc_opcode();
-    this->opcode_table[0xD3] = new out_opcode();
+    this->opcode_table[0xD3] = new out_opcode(hw);
     this->opcode_table[0xD4] = new cnc_opcode();
     this->opcode_table[0xD5] = new push_d_opcode();
     this->opcode_table[0xD6] = new sui_opcode();
@@ -236,7 +236,7 @@ void cpu::init() {
     this->opcode_table[0xD8] = new rc_opcode();
     this->opcode_table[0xD9] = new ret_opcode();
     this->opcode_table[0xDA] = new jc_opcode();
-    this->opcode_table[0xDB] = new in_opcode();
+    this->opcode_table[0xDB] = new in_opcode(hw);
     this->opcode_table[0xDC] = new cc_opcode();
     this->opcode_table[0xDD] = new call_opcode();
     this->opcode_table[0xDE] = new sbi_opcode();
@@ -276,13 +276,13 @@ void cpu::init() {
 }
 
 
-cpu::cpu(cpu_memory& rom)
+cpu::cpu(cpu_memory& rom, invaders& hw)
     : memory(rom),
       is_interrupted(false),
       interrupt_enable(true),
       is_running(false)
 {
-    init();
+    init(hw);
 }
 
 void cpu::enable_interrupt(bool en)
@@ -342,11 +342,55 @@ static QString mcm_convert_to_hex_u16(uint16_t reg_val)
     return number;
 }
 
+QString cpu::log(cpu_debug& debug_info) {
+/*
+    QString ass_cmd;
+    ass_cmd.append(debug_info.curr_opcode_cmd);
+    ass_cmd.append("\n");
+    return ass_cmd;
+*/
+    QString ass_cmd("\n---------------------------------------------");
 
+    ass_cmd.append(debug_info.curr_opcode_cmd);
+    ass_cmd.append("\n\t a:");
+    ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_a()));
+    ass_cmd.append('\n');
+
+    ass_cmd.append("\t b:");
+    ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_b()));
+    ass_cmd.append("\t c:");
+    ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_c()));
+    ass_cmd.append('\n');
+
+    ass_cmd.append("\t d:");
+    ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_d()));
+    ass_cmd.append("\t e:");
+    ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_e()));
+    ass_cmd.append('\n');
+
+    ass_cmd.append("\t h:");
+    ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_h()));
+    ass_cmd.append("\t l:");
+    ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_l()));
+    ass_cmd.append('\n');
+
+    uint16_t stack_ptr = this->core_p().get_sp();
+    for(int i = 0 ; i < 10 ; i++ ) {
+        ass_cmd.append("\n\n");
+        ass_cmd.append(mcm_convert_to_hex_u16(stack_ptr));
+        ass_cmd.append(": ");
+        uint16_t data = this->rom().get_u16(stack_ptr);
+        ass_cmd.append(mcm_convert_to_hex_u16(data));
+        stack_ptr += 2;
+    }
+
+    return ass_cmd;
+
+}
 void cpu::execute(QFile& log_file)
 {
     uint8_t opcode = 0x00;
-
+    opcodes *ptr = NULL;
     try {
 
         while(core.get_pc() < memory.size())
@@ -359,59 +403,33 @@ void cpu::execute(QFile& log_file)
             }
 
             else {
+                if (core.get_pc()  == 0x01EF || core.get_pc() == 0x1F5) {
+                    log_file.close();
+
+
+                }
                 opcode = memory[core.get_pc()];
             }
 
-            opcodes *ptr = opcode_table[opcode];
-            QString ass_cmd("\n-----------------------------------\n");
+            ptr = opcode_table[opcode];
 
             ptr->store_pre_debug_data(*this, debug_info);
             ptr->handle_opcode(*this);
             ptr->store_post_debug_data(*this, debug_info);
 
-            // Log to file
-
-            ass_cmd.append(debug_info.curr_opcode_cmd);
-            ass_cmd.append("\n\t a:");
-            ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_a()));
-            ass_cmd.append('\n');
-
-            ass_cmd.append("\t b:");
-            ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_b()));
-            ass_cmd.append("\t c:");
-            ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_c()));
-            ass_cmd.append('\n');
-
-            ass_cmd.append("\t d:");
-            ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_d()));
-            ass_cmd.append("\t e:");
-            ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_e()));
-            ass_cmd.append('\n');
-
-            ass_cmd.append("\t h:");
-            ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_h()));
-            ass_cmd.append("\t l:");
-            ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_l()));
-            ass_cmd.append('\n');
-
-            uint16_t stack_ptr = this->core_p().get_sp();
-            for(int i = 0 ; i < 10 ; i++ ) {
-                ass_cmd.append("\n\n");
-                ass_cmd.append(mcm_convert_to_hex_u16(stack_ptr));
-                ass_cmd.append(": ");
-                uint16_t data = this->rom().get_u16(stack_ptr);
-                ass_cmd.append(mcm_convert_to_hex_u16(data));
-                stack_ptr++;
-            }
-
+            QString  ass_cmd = log(debug_info);
             log_file.write(ass_cmd.toUtf8());
-
-
         }
     }
 
     catch(...)
     {
+        cpu_debug d_info;
+        ptr->store_pre_debug_data(*this, d_info);
+
+        QString  ass_cmd = log(d_info);
+        log_file.write(ass_cmd.toUtf8());
+
         log_file.close();
     }
 }

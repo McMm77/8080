@@ -23,8 +23,7 @@ rst1_opcode::rst1_opcode()
 
 void rst1_opcode::handle_opcode(cpu &cpu_8080)
 {
-    uint16_t addr = cpu_8080.core_p().get_pc() + 1;
-    cpu_8080.core_p().set_pc_to(0);
+    uint16_t addr = cpu_8080.core_p().get_pc();
     cpu_8080.push_u16_on_the_stack(addr);
 
     cpu_8080.core_p().set_pc_to(1*8);
@@ -36,7 +35,7 @@ rst2_opcode::rst2_opcode()
 
 void rst2_opcode::handle_opcode(cpu &cpu_8080)
 {
-    uint16_t addr = cpu_8080.core_p().get_pc() + 1;
+    uint16_t addr = cpu_8080.core_p().get_pc();
     cpu_8080.push_u16_on_the_stack(addr);
 
     cpu_8080.core_p().set_pc_to(2*8);

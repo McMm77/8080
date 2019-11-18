@@ -69,7 +69,8 @@ HEADERS += \
     single_register_opcodes.h \
     carry_bit_opcode.h \
     hlt_opcode.h \
-    nop_opcode.h
+    nop_opcode.h \
+    invaders.h
 
 FORMS += \
         mainwindow.ui

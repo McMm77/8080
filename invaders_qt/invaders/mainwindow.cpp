@@ -21,6 +21,9 @@ MainWindow::MainWindow(QWidget *parent) :
     debug_pc = ui->debug_pc;
     step_x_button = ui->step_x_button;
 
+    start_button = ui->start_1_player_button;
+    coin_button = ui->coin_button;
+
     rst_button0 = ui->reset_button_0;
     rst_button1 = ui->reset_button_1;
     rst_button2 = ui->reset_button_2;
@@ -60,6 +63,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(rst_button5, SIGNAL (released()), this, SLOT (handleResetButton_5()));
     connect(rst_button6, SIGNAL (released()), this, SLOT (handleResetButton_6()));
     connect(rst_button7, SIGNAL (released()), this, SLOT (handleResetButton_7()));
+    connect(start_button, SIGNAL (released()), this, SLOT (handleStartButton()));
+    connect(start_button, SIGNAL (pressed()), this, SLOT (handleStartPressed()));
+    connect(coin_button, SIGNAL (released()), this, SLOT(handleCoinButton()));
 }
 
 MainWindow::~MainWindow()
@@ -67,10 +73,19 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::handleStartButton() {
+    invader.start_p1_released();
+}
+
+void MainWindow::handleStartPressed() {
+    invader.start_p1_pressed();
+}
+void MainWindow::handleCoinButton() {
+    invader.coin_inserted();
+}
 void MainWindow::handleEmulationTrigger()
 {
     invader.start();
-    update_screen_timer->start(34);
 }
 
 void MainWindow::handleDebugStepButton() {
@@ -87,18 +102,22 @@ void MainWindow::handleDebugStepButton() {
 void MainWindow::handleXStepButton() {
 
     cpu_debug debug_info;
-    invader.step(debug_info, 100);
+    invader.step(debug_info, 100000);
 
     update_cpu_core_data(debug_info);
     draw_screen();
 }
 
 void MainWindow::handleStepButton() {
+
+    update_screen_timer->start(17);
+/*
     cpu_debug debug_info;
     invader.step(debug_info, 1);
 
     update_cpu_core_data(debug_info);
     draw_screen();
+*/
 }
 
 void MainWindow::handleResetButton_0()

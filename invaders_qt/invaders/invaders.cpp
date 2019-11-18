@@ -29,7 +29,7 @@ void invaders::step_to(cpu_debug &debug_info, uint16_t pc_counter)
 
             QByteArray arr = rom_image.readAll();
             memory = new cpu_memory(arr);
-            cpu_8080 = new cpu(*memory);
+            cpu_8080 = new cpu(*memory, *this);
 
             is_running = true;
         }
@@ -47,7 +47,7 @@ void invaders::step(cpu_debug& debug_info, int nSteps = 1)
 
             QByteArray arr = rom_image.readAll();
             memory = new cpu_memory(arr);
-            cpu_8080 = new cpu(*memory);
+            cpu_8080 = new cpu(*memory, *this);
 
             is_running = true;
         }
@@ -85,8 +85,42 @@ void invaders::run() {
 
            QByteArray arr = rom_image.readAll();
            memory = new cpu_memory(arr);
-           cpu_8080 = new cpu(*memory);
+           cpu_8080 = new cpu(*memory, *this);
 
            cpu_8080->execute(myFile);
        }
+}
+
+void invaders::coin_inserted() {
+    coin = 1;
+}
+
+void invaders:: start_p1_pressed() {
+    start_b = true;
+}
+
+void invaders::start_p1_released() {
+    start_b = false;
+}
+
+void invaders::start_pressed() {
+    start_b = 1;
+}
+
+uint8_t invaders::input_1_handler()
+{
+    return 0x00;
+}
+
+uint8_t invaders::input_2_handler()
+{
+    uint8_t ret = 0x04;
+    ret |= coin;
+    ret |= (start_b << 2);
+    return ret;
+}
+
+uint8_t invaders::input_3_handler()
+{
+    return 0x00;
 }

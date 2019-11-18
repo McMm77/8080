@@ -43,6 +43,9 @@ private slots:
     void handleResetButton_5();
     void handleResetButton_6();
     void handleResetButton_7();
+    void handleCoinButton();
+    void handleStartButton();
+    void handleStartPressed();
     void updateScreen();
 
 private:
@@ -84,6 +87,9 @@ private:
     QPushButton *rst_button5;
     QPushButton *rst_button6;
     QPushButton *rst_button7;
+
+    QPushButton *start_button;
+    QPushButton *coin_button;
 
     QTimer *update_screen_timer;
     QGraphicsScene *graphic;

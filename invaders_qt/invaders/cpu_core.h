@@ -21,7 +21,8 @@ public:
           extended_memory((8 * 1024), 0x00)
     {
         this->append(extended_memory);
-//        this->operator [](0x20c1) = 2;
+        this->operator [](0x20c1) = 2;
+        this->operator [](0x20EB) = 12;
         this->arr_size = this->size();
     }
 
@@ -208,14 +209,17 @@ class cpu_debug {
         cpu_core_status_flags post_core_flags;
 };
 
+class invaders;
+
 class cpu
 {
 public:
-    cpu(cpu_memory&);
+    cpu(cpu_memory&, invaders&);
 
 private:
-    void init();
+    void init(invaders&);
     uint8_t extract_interrupt_opcode();
+    QString log(cpu_debug&);
 
 public:
     void execute(QFile&);
@@ -258,9 +262,20 @@ public:
     invaders();
 
 public:
+    uint8_t input_0_handler();
+    uint8_t input_1_handler();
+    uint8_t input_2_handler();
+    uint8_t input_3_handler();
+
+public:
+    void coin_inserted();
+    void start_p1_pressed();
+    void start_p1_released();
+public:
     void reset();
     void step(cpu_debug&, int nSteps);
     void step_to(cpu_debug &debug_info, uint16_t pc_counter);
+    void start_pressed();
 
     QByteArray get_screen_buffer();
     uint8_t get_pixel(int);
@@ -273,6 +288,10 @@ private:
     bool        is_running;
 public:
     void run() override;
+
+private:
+    int coin;
+    int start_b;
 };
 
 #endif // CPU_CORE_H
