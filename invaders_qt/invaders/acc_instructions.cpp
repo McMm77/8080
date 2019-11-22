@@ -39,7 +39,12 @@ void sub_instr::sub(cpu &cpu_8080, uint8_t val)
     uint8_t two_qu = ~val + 1;
     uint8_t reg_a = cpu_8080.core_p().get_reg_a();
 
-    cpu_8080.core_flag().set_c_flag(reg_a, two_qu);
+//    cpu_8080.core_flag().set_c_flag(reg_a, two_qu);
+    if(reg_a < val)
+        cpu_8080.core_flag().set_c_flag(1);
+    else
+        cpu_8080.core_flag().set_c_flag(0);
+
     cpu_8080.core_flag().set_ac_flag(reg_a, two_qu);
 
     reg_a += two_qu;
@@ -57,7 +62,13 @@ void sbb_instr::sbb(cpu &cpu_8080, uint8_t val)
     uint8_t reg_a = cpu_8080.core_p().get_reg_a();
     uint8_t two_qu = ~(val + cbit) + 1;
 
-    cpu_8080.core_flag().set_c_flag(reg_a, two_qu);
+//    cpu_8080.core_flag().set_c_flag(reg_a, two_qu);
+
+    if(reg_a < (val + cbit))
+        cpu_8080.core_flag().set_c_flag(1);
+    else
+        cpu_8080.core_flag().set_c_flag(0);
+
     cpu_8080.core_flag().set_ac_flag(reg_a, two_qu);
 
     reg_a += two_qu;
@@ -118,7 +129,13 @@ void cmp_instr::cmp(cpu &cpu_8080, uint8_t val)
     uint8_t two_qu = ~val + 1;
     uint8_t reg_a = cpu_8080.core_p().get_reg_a();
 
-    cpu_8080.core_flag().set_c_flag(reg_a, two_qu);
+
+//    cpu_8080.core_flag().set_c_flag(reg_a, two_qu);
+    if (reg_a < val)
+        cpu_8080.core_flag().set_c_flag(1);
+    else
+        cpu_8080.core_flag().set_c_flag(0);
+
     cpu_8080.core_flag().set_ac_flag(reg_a, two_qu);
 
     reg_a += two_qu;

@@ -381,8 +381,15 @@ sphl_opcode::sphl_opcode()
     : opcodes(1, 5, 5, "SPHL")
 {}
 
-void sphl_opcode::handle_opcode(cpu&)
-{}
+void sphl_opcode::handle_opcode(cpu &cpu_8080)
+{
+    uint16_t addr = cpu_8080.rom().get_u16(cpu_8080.core_p().get_pc()+1);
+
+    cpu_8080.core_p().set_reg_l(cpu_8080.rom().get_u8(addr));
+    cpu_8080.core_p().set_reg_h(cpu_8080.rom().get_u8(addr+1));
+
+    cpu_8080.core_p().increase_pc(instr_size());
+}
 
 xchg_opcode::xchg_opcode()
     : opcodes(1, 5, 5, "XCHG")

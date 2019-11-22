@@ -9,6 +9,52 @@
 #include <QMutex>
 
 using namespace std;
+/*
+class cpu_memory : public QByteArray
+{
+private:
+    QMutex  mutex_flag;
+
+public:
+
+    cpu_memory(QByteArray& arr)
+        : QByteArray(100, 1)
+    {
+        this->append(arr);
+    }
+
+public:
+    uint8_t get_u8(int offset) {
+
+        mutex_flag.lock();
+        uint8_t val = this->operator [](offset);
+        mutex_flag.unlock();
+
+        return val;
+    }
+
+    void set_u8(int addr, uint8_t val) {
+
+        mutex_flag.lock();
+        this->operator [](addr) = val;
+        mutex_flag.unlock();
+    }
+
+    uint16_t get_u16(int offset) {
+
+        mutex_flag.lock();
+        uint8_t lbit = this->operator[](offset);
+        uint8_t hbit = this->operator[](offset+1);
+        uint16_t val = ((hbit << 8) | lbit);
+        mutex_flag.unlock();
+
+        return val;
+    }
+
+private:
+    int arr_size;
+};
+*/
 
 class cpu_memory : public QByteArray
 {
@@ -16,13 +62,14 @@ private:
     QMutex  mutex_flag;
 
 public:
+
     cpu_memory(QByteArray& arr)
         : QByteArray(arr),
           extended_memory((8 * 1024), 0x00)
     {
         this->append(extended_memory);
-        this->operator [](0x20c1) = 2;
-        this->operator [](0x20EB) = 12;
+        this->operator [](0x20c1) = 1;
+//        this->operator [](0x20EB) = 12;
         this->arr_size = this->size();
     }
 
@@ -38,10 +85,8 @@ public:
 
     void set_u8(int addr, uint8_t val) {
 
-        if(addr <= 0x1FFF)
-            throw "Write Inside Rom";
-
-//        Q_ASSERT(addr > 0x1FFF);
+        if (addr >= 0x2300 && addr <= 0x23BB)
+            throw "Exception Memory";
 
         mutex_flag.lock();
         this->operator [](addr) = val;
@@ -68,6 +113,7 @@ private:
     int arr_size;
 };
 
+
 class cpu_core_status_flags
 {
 public:
@@ -89,7 +135,15 @@ public:
 public:
     void set_z_flag(uint8_t val)    { z_flag = (val == 0) ? 1 : 0;   }
     void set_s_flag(uint8_t val)    { s_flag = (val & 0x80) ? 1 : 0; }
-    void set_p_flag(uint8_t val)    { p_flag = (val & 0x01) ? 1 : 0; }
+    void set_p_flag(uint8_t val)    {
+        uint8_t cnt = 0;
+        for(int i = 0 ; i < 8 ; i++) {
+            uint8_t bit = ((val >> i) & 0x01);
+            cnt += ((bit == 1) ? 1 : 0);
+        }
+
+        p_flag = (cnt & 0x01) ? 0 : 1;
+    }
     void set_c_flag(uint8_t val)    { c_flag = (val != 0) ? 1 : 0;   }
     void set_ac_flag(uint8_t val)   { ac_flag = (val != 0) ? 1 : 0;  }
     void set_c_flag(uint8_t reg, uint8_t val) {
@@ -109,7 +163,7 @@ public:
         s_flag = ((psw & 0x80) != 0);
     }
 
-    uint8_t get_psw() {https://wroclaw.wyborcza.pl/wroclaw/7,35771,25405066,wroclawski-pionier-nanoczasteczek-rozpoczal-wspolprace-z-gigantem.html
+    uint8_t get_psw() {
         uint8_t psw = 0x00;
 
         psw |= c_flag << 0;
@@ -222,7 +276,7 @@ private:
     QString log(cpu_debug&);
 
 public:
-    void execute(QFile&);
+    void execute(QFile&, QFile&);
     void single_step(cpu_debug&);
     void interrupt(unsigned long);
 
@@ -251,9 +305,6 @@ public:
     cpu_core& core_p()                      { return core;   }
     cpu_core_status_flags& core_flag()      { return flags;  }
     cpu_memory& rom()                       { return memory; }
-
-
-
 };
 
 class invaders : public QThread
@@ -268,9 +319,26 @@ public:
     uint8_t input_3_handler();
 
 public:
-    void coin_inserted();
+    void coin_inserted(uint8_t);
     void start_p1_pressed();
     void start_p1_released();
+    void start_p2_pressed();
+
+public:
+    void left_p1_pressed();
+    void left_p1_released();
+    void right_p1_pressed();
+    void right_p1_released();
+    void fire_p1_pressed();
+    void fire_p1_released();
+
+    void left_p2_pressed();
+    void left_p2_released();
+    void right_p2_pressed();
+    void right_p2_released();
+    void fire_p2_pressed();
+    void fire_p2_released();
+
 public:
     void reset();
     void step(cpu_debug&, int nSteps);
@@ -292,6 +360,14 @@ public:
 private:
     int coin;
     int start_b;
+    uint8_t start_p2;
+
+    uint8_t left_1;
+    uint8_t left_2;
+    uint8_t right_1;
+    uint8_t right_2;
+    uint8_t fire_1;
+    uint8_t fire_2;
 };
 
 #endif // CPU_CORE_H

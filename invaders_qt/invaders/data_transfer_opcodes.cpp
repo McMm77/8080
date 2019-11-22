@@ -97,7 +97,7 @@ mov_bd_opcode::mov_bd_opcode()
 {}
 
 void mov_bd_opcode::handle_opcode(cpu &cpu_8080)
-{cpu_8080.core_p().increase_pc(instr_size());
+{
     cpu_8080.core_p().set_reg_b(cpu_8080.core_p().get_reg_d());
 
     cpu_8080.core_p().increase_pc(instr_size());

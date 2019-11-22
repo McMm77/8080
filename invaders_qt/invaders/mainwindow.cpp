@@ -21,8 +21,19 @@ MainWindow::MainWindow(QWidget *parent) :
     debug_pc = ui->debug_pc;
     step_x_button = ui->step_x_button;
 
+
+    /* User Control Buttons */
     start_button = ui->start_1_player_button;
+    start_p2_button = ui->start_2_player_button;
     coin_button = ui->coin_button;
+
+    left_p1_button = ui->left_button_p1;
+    fire_p1_button = ui->fire_button_p1;
+    right_p1_button = ui->right_button_p1;
+
+    left_p2_button = ui->left_button_p2;
+    fire_p2_button = ui->fire_button_p2;
+    right_p2_button = ui->right_button_p2;
 
     rst_button0 = ui->reset_button_0;
     rst_button1 = ui->reset_button_1;
@@ -65,12 +76,98 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(rst_button7, SIGNAL (released()), this, SLOT (handleResetButton_7()));
     connect(start_button, SIGNAL (released()), this, SLOT (handleStartButton()));
     connect(start_button, SIGNAL (pressed()), this, SLOT (handleStartPressed()));
-    connect(coin_button, SIGNAL (released()), this, SLOT(handleCoinButton()));
+    connect(start_p2_button, SIGNAL (released()), this, SLOT(handleStartP2Pressed()));
+    connect(coin_button, SIGNAL (pressed()), this, SLOT(handleCoinButton()));
+    connect(coin_button, SIGNAL (released()), this, SLOT(handleCoinButtonReleased()));
+
+
+    connect(left_p1_button, SIGNAL (pressed()), this, SLOT (handleLeftP1Pressed()));
+    connect(left_p1_button, SIGNAL (released()), this, SLOT(handleLeftP1Released()));
+
+    connect(fire_p1_button, SIGNAL (pressed()), this, SLOT (handleFireP1Pressed()));
+    connect(fire_p1_button, SIGNAL (released()), this, SLOT(handleFireP1Released()));
+
+    connect(right_p1_button, SIGNAL (pressed()), this, SLOT (handleRightP1Pressed()));
+    connect(right_p1_button, SIGNAL (released()), this, SLOT(handleRightP1Released()));
+
+    connect(left_p2_button, SIGNAL (pressed()), this, SLOT (handleLeftP2Pressed()));
+    connect(left_p2_button, SIGNAL (released()), this, SLOT(handleLeftP2Released()));
+
+    connect(fire_p2_button, SIGNAL (pressed()), this, SLOT (handleFireP2Pressed()));
+    connect(fire_p2_button, SIGNAL (released()), this, SLOT(handleFireP2Released()));
+
+    connect(right_p2_button, SIGNAL (pressed()), this, SLOT (handleRightP2Pressed()));
+    connect(right_p2_button, SIGNAL (released()), this, SLOT(handleRightP2Released()));
+
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::handleLeftP1Pressed()
+{
+    invader.left_p1_pressed();
+}
+
+void MainWindow::handleLeftP1Released()
+{
+    invader.left_p1_released();
+}
+
+void MainWindow::handleFireP1Pressed()
+{
+    invader.fire_p1_pressed();
+}
+
+void MainWindow::handleFireP1Released()
+{
+    invader.fire_p2_pressed();
+}
+
+void MainWindow::handleRightP1Pressed()
+{
+    invader.right_p1_pressed();
+}
+
+void MainWindow::handleRightP1Released()
+{
+    invader.right_p1_released();
+}
+
+void MainWindow::handleLeftP2Pressed()
+{
+    invader.left_p2_pressed();
+}
+
+void MainWindow::handleLeftP2Released()
+{
+    invader.left_p2_released();
+}
+
+void MainWindow::handleFireP2Pressed()
+{
+    invader.fire_p2_pressed();
+}
+
+void MainWindow::handleFireP2Released()
+{
+    invader.fire_p2_released();
+}
+
+void MainWindow::handleRightP2Pressed()
+{
+    invader.right_p2_pressed();
+}
+
+void MainWindow::handleRightP2Released()
+{
+    invader.right_p2_released();
+}
+
+void MainWindow::handleStartP2Pressed() {
+    invader.start_p2_pressed();
 }
 
 void MainWindow::handleStartButton() {
@@ -81,30 +178,50 @@ void MainWindow::handleStartPressed() {
     invader.start_p1_pressed();
 }
 void MainWindow::handleCoinButton() {
-    invader.coin_inserted();
+    invader.coin_inserted(1);
 }
+
+void MainWindow::handleCoinButtonReleased() {
+    invader.coin_inserted(0);
+}
+
 void MainWindow::handleEmulationTrigger()
 {
-    invader.start();
+    static bool emulation_started = false;
+
+
+    if (emulation_started == false) {
+        emulation_started = true;
+        trigger_button->setText("Reset");
+        invader.start();
+
+    } else {
+        emulation_started = false;
+        trigger_button->setText("Run");
+        invader.requestInterruption();
+    }
 }
 
 void MainWindow::handleDebugStepButton() {
+/*
     bool ok;
     cpu_debug debug_info;
     QString pc_str = debug_pc->text();
-    uint16_t pc = pc_str.toUInt(&ok, 16);
+    uint16_t pc = pc_str.toUInt(&ok, 160);
 
     invader.step_to(debug_info, pc);
 
     update_cpu_core_data(debug_info);
+*/
     draw_screen();
 }
 void MainWindow::handleXStepButton() {
-
+/*
     cpu_debug debug_info;
     invader.step(debug_info, 100000);
 
     update_cpu_core_data(debug_info);
+*/
     draw_screen();
 }
 
@@ -158,6 +275,7 @@ void MainWindow::handleResetButton_6()
 void MainWindow::handleResetButton_7()
 {
     invader.rst_interrupt(7);
+
 }
 
 QString MainWindow::convert_u16_to_hexstr(uint16_t reg_val)
@@ -229,22 +347,7 @@ void MainWindow::draw_screen() {
             counter++;
         }
     }
-/*
-    for( int x = 0 ; x < screen_x ; x++) {
-        for(int y = 0 ; y < screen_y ; y+=8) {
-            for (int i = 0 ; i < 8 ; i++) {
-                uint8_t pixel = invader.get_pixel(counter);
 
-                if( pixel & (0x1 << i)) {
-                    image.setPixel(x, (y+i), qRgb(128, 128, 128));
-                }
-
-            }
-
-            counter++;
-        }
-    }
-*/
     graphic->addPixmap(QPixmap::fromImage(image));
     ui->play_screen->setScene((graphic));
 }

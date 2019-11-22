@@ -44,8 +44,26 @@ private slots:
     void handleResetButton_6();
     void handleResetButton_7();
     void handleCoinButton();
+    void handleCoinButtonReleased();
     void handleStartButton();
     void handleStartPressed();
+
+    void handleStartP2Pressed();
+
+    void handleLeftP1Pressed();
+    void handleLeftP1Released();
+    void handleFireP1Pressed();
+    void handleFireP1Released();
+    void handleRightP1Pressed();
+    void handleRightP1Released();
+
+    void handleLeftP2Pressed();
+    void handleLeftP2Released();
+    void handleFireP2Pressed();
+    void handleFireP2Released();
+    void handleRightP2Pressed();
+    void handleRightP2Released();
+
     void updateScreen();
 
 private:
@@ -88,7 +106,16 @@ private:
     QPushButton *rst_button6;
     QPushButton *rst_button7;
 
+    QPushButton *left_p1_button;
+    QPushButton *fire_p1_button;
+    QPushButton *right_p1_button;
+
+    QPushButton *left_p2_button;
+    QPushButton *fire_p2_button;
+    QPushButton *right_p2_button;
+
     QPushButton *start_button;
+    QPushButton *start_p2_button;
     QPushButton *coin_button;
 
     QTimer *update_screen_timer;

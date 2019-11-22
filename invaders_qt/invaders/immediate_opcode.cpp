@@ -153,7 +153,7 @@ void lxi_sp_opcode::handle_opcode(cpu &cpu_8080)
 }
 
 adi_opcode::adi_opcode()
-    : opcodes(2, 7, 7, "CPI")
+    : opcodes(2, 7, 7, "ADI")
 {}
 
 void adi_opcode::handle_opcode(cpu &cpu_8080)

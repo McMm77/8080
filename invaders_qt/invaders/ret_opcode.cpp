@@ -73,7 +73,7 @@ rpo_opcode::rpo_opcode()
 
 void rpo_opcode::handle_opcode(cpu &cpu_8080)
 {
-    if (cpu_8080.core_flag().get_p_flag() == 1) {
+    if (cpu_8080.core_flag().get_p_flag() == 0) {
         ret_opcode::handle_opcode(cpu_8080);
     } else {
         cpu_8080.core_p().increase_pc(instr_size());
@@ -86,7 +86,7 @@ rpe_opcode::rpe_opcode()
 
 void rpe_opcode::handle_opcode(cpu &cpu_8080)
 {
-    if (cpu_8080.core_flag().get_p_flag() == 0) {
+    if (cpu_8080.core_flag().get_p_flag() == 1) {
         ret_opcode::handle_opcode(cpu_8080);
     } else {
         cpu_8080.core_p().increase_pc(instr_size());

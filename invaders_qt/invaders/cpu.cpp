@@ -343,54 +343,74 @@ static QString mcm_convert_to_hex_u16(uint16_t reg_val)
 }
 
 QString cpu::log(cpu_debug& debug_info) {
-/*
-    QString ass_cmd;
-    ass_cmd.append(debug_info.curr_opcode_cmd);
-    ass_cmd.append("\n");
-    return ass_cmd;
-*/
-    QString ass_cmd("\n---------------------------------------------");
+    QString ass_cmd("\n---------------------------------------------\n");
 
     ass_cmd.append(debug_info.curr_opcode_cmd);
-    ass_cmd.append("\n\t a:");
+    ass_cmd.append('\n');
+
+    ass_cmd.append("\na:");
     ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_a()));
     ass_cmd.append('\n');
 
-    ass_cmd.append("\t b:");
+    ass_cmd.append("b:");
     ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_b()));
-    ass_cmd.append("\t c:");
+    ass_cmd.append("\tc:");
     ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_c()));
     ass_cmd.append('\n');
 
-    ass_cmd.append("\t d:");
+    ass_cmd.append("d:");
     ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_d()));
-    ass_cmd.append("\t e:");
+    ass_cmd.append("\te:");
     ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_e()));
     ass_cmd.append('\n');
 
-    ass_cmd.append("\t h:");
+    ass_cmd.append("h:");
     ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_h()));
-    ass_cmd.append("\t l:");
+    ass_cmd.append("\tl:");
     ass_cmd.append(mcm_convert_to_hex_u8(debug_info.curr_core.get_reg_l()));
     ass_cmd.append('\n');
 
-    uint16_t stack_ptr = this->core_p().get_sp();
-    for(int i = 0 ; i < 10 ; i++ ) {
-        ass_cmd.append("\n\n");
-        ass_cmd.append(mcm_convert_to_hex_u16(stack_ptr));
-        ass_cmd.append(": ");
-        uint16_t data = this->rom().get_u16(stack_ptr);
-        ass_cmd.append(mcm_convert_to_hex_u16(data));
-        stack_ptr += 2;
+    QString status_flag("\nFlags: c: ");
+    status_flag.append(QString::number(debug_info.curr_core_flags.get_c_flag()));
+    status_flag.append(" ac: ");
+    status_flag.append(QString::number(debug_info.curr_core_flags.get_ac_flag()));
+    status_flag.append(" s: ");
+    status_flag.append(QString::number(debug_info.curr_core_flags.get_s_flag()));
+    status_flag.append(" p: ");
+    status_flag.append(QString::number(debug_info.curr_core_flags.get_p_flag()));
+    status_flag.append(" z: ");
+    status_flag.append(QString::number(debug_info.curr_core_flags.get_z_flag()));
+    status_flag.append('\n');
+
+    ass_cmd.append(status_flag);
+
+    uint16_t stack_ptr = debug_info.curr_core.get_sp();
+    uint8_t stack_size = 0x2400 - stack_ptr;
+
+/*
+    QString stack_str("Stack: ");
+    stack_str.append(QString::number(stack_size));
+    stack_str.append('\n');
+
+    for(int i = 0 ; i < stack_size ; i++) {
+        uint8_t val = rom().get_u8(stack_ptr+i);
+        stack_str.append(QString::number(i));
+        stack_str.append("): ");
+        stack_str.append(mcm_convert_to_hex_u8(val));
+        stack_str.append('\n');
     }
 
+    ass_cmd.append(stack_str);
+*/
     return ass_cmd;
-
 }
-void cpu::execute(QFile& log_file)
+
+void cpu::execute(QFile& log_file, QFile& short_file)
 {
     uint8_t opcode = 0x00;
     opcodes *ptr = NULL;
+    uint counter = 0;
+
     try {
 
         while(core.get_pc() < memory.size())
@@ -403,11 +423,6 @@ void cpu::execute(QFile& log_file)
             }
 
             else {
-                if (core.get_pc()  == 0x01EF || core.get_pc() == 0x1F5) {
-                    log_file.close();
-
-
-                }
                 opcode = memory[core.get_pc()];
             }
 
@@ -417,8 +432,24 @@ void cpu::execute(QFile& log_file)
             ptr->handle_opcode(*this);
             ptr->store_post_debug_data(*this, debug_info);
 
+            if(counter++ == 100)  {
+                    counter = 0;
+                    QThread::usleep(100);
+                }
+
+            QString short_cmd = debug_info.curr_opcode_cmd;
+            short_cmd.append('\n');
+            short_file.write(short_cmd.toUtf8());
+
             QString  ass_cmd = log(debug_info);
             log_file.write(ass_cmd.toUtf8());
+
+            if (QThread::currentThread()->isInterruptionRequested()) {
+                log_file.close();
+                short_file.close();
+
+                return;
+            }
         }
     }
 
@@ -427,15 +458,31 @@ void cpu::execute(QFile& log_file)
         cpu_debug d_info;
         ptr->store_pre_debug_data(*this, d_info);
 
+        QString short_cmd = d_info.curr_opcode_cmd;
+        short_cmd.append('\n');
+        short_file.write(short_cmd.toUtf8());
+
         QString  ass_cmd = log(d_info);
         log_file.write(ass_cmd.toUtf8());
 
         log_file.close();
+        short_file.close();
     }
 }
 
+static unsigned long count_st;
+extern QFile shortFile;
+
 void cpu::push_u16_on_the_stack(uint16_t val)
 {
+    count_st += 2;
+
+    QString push_string("stack_size_16: ");
+    push_string.append(QString::number(count_st));
+    push_string.append('\t');
+
+
+
     uint16_t st_ptr = core_p().get_sp();
     uint8_t lbit = (val & 0x00FF);
     uint8_t hbit = (val >> 8) & 0x00FF;
@@ -443,32 +490,76 @@ void cpu::push_u16_on_the_stack(uint16_t val)
     rom().set_u8(--st_ptr, hbit);
     rom().set_u8(--st_ptr, lbit);
 
+    QString n;
+    n.sprintf("%04xH", val);
+    push_string.append(n);
+    push_string.append('\n');
+    shortFile.write(push_string.toUtf8());
+
     core_p().set_sp(st_ptr);
 }
 
 uint16_t cpu::pop_u16_from_the_stack()
 {
+    count_st -= 2;
+
+    QString push_string("stack_size_16: ");
+    push_string.append(QString::number(count_st));
+    push_string.append('\t');
+
+
     uint16_t st_ptr = core_p().get_sp();
     uint8_t lbit = rom().get_u8(st_ptr++);
     uint8_t hbit = rom().get_u8(st_ptr++);
     uint16_t val = (hbit << 8) | lbit;
 
     core_p().set_sp(st_ptr);
+    QString n;
+    n.sprintf("%04xH", val);
+    push_string.append(n);
+    push_string.append('\n');
+    shortFile.write(push_string.toUtf8());
 
     return val;
 }
 
 void cpu::push_on_the_stack(uint8_t val)
 {
+    count_st++;
+
+    QString push_string("stack_size_8: ");
+    push_string.append(QString::number(count_st));
+    push_string.append('\t');
+
     uint16_t st_ptr = core_p().get_sp();
     rom().set_u8(--st_ptr, val);
     core_p().set_sp(st_ptr);
+
+    QString n;
+    n.sprintf("%04xH", val);
+    push_string.append(n);
+    push_string.append('\n');
+    shortFile.write(push_string.toUtf8());
+
 }
+
 uint8_t cpu::pop_from_the_stack()
 {
+    count_st--;
+
+    QString push_string("stack_size_8: ");
+    push_string.append(QString::number(count_st));
+    push_string.append('\t');
+
     uint16_t st_ptr = core_p().get_sp();
     uint8_t val = rom().get_u8(st_ptr++);
     core_p().set_sp(st_ptr);
+
+    QString n;
+    n.sprintf("%04xH", val);
+    push_string.append(n);
+    push_string.append('\n');
+    shortFile.write(push_string.toUtf8());
 
     return val;
 }

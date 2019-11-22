@@ -19,7 +19,11 @@ inr_opcode::inr_opcode(QString ass_cmd)
 
 void inr_opcode::inr(cpu &cpu_8080, uint8_t& val)
 {
+    uint8_t temp_val = val;
     val++;
+
+    cpu_8080.core_flag().set_c_flag(val, temp_val);
+    cpu_8080.core_flag().set_ac_flag(val, temp_val);
 
     cpu_8080.core_flag().set_p_flag(val);
     cpu_8080.core_flag().set_z_flag(val);
@@ -128,7 +132,7 @@ void inr_a_opcode::handle_opcode(cpu &cpu_8080)
 {
     uint8_t reg_a = cpu_8080.core_p().get_reg_a();
     inr(cpu_8080, reg_a);
-    cpu_8080.core_p().set_reg_h(reg_a);
+    cpu_8080.core_p().set_reg_a(reg_a);
 
     cpu_8080.core_p().increase_pc(instr_size());
 }
@@ -141,7 +145,11 @@ dcr_opcode::dcr_opcode(QString ass_cmd)
 
 void dcr_opcode::dcr(cpu &cpu_8080, uint8_t& val)
 {
+    uint8_t temp_val = val;
     val--;
+
+    cpu_8080.core_flag().set_c_flag(val, temp_val);
+    cpu_8080.core_flag().set_ac_flag(val, temp_val);
 
     cpu_8080.core_flag().set_p_flag(val);
     cpu_8080.core_flag().set_z_flag(val);

@@ -34,7 +34,7 @@ jpo_opcode::jpo_opcode()
 
 void jpo_opcode::handle_opcode(cpu &cpu_8080)
 {
-    if (cpu_8080.core_flag().get_p_flag() == 1) {
+    if (cpu_8080.core_flag().get_p_flag() == 0) {
         jmp_opcode::handle_opcode(cpu_8080);
     } else {
         cpu_8080.core_p().increase_pc(instr_size());
@@ -47,7 +47,7 @@ jpe_opcode::jpe_opcode()
 
 void jpe_opcode::handle_opcode(cpu& cpu_8080)
 {
-    if(cpu_8080.core_flag().get_p_flag() == 0) {
+    if(cpu_8080.core_flag().get_p_flag() == 1) {
         jmp_opcode::handle_opcode(cpu_8080);
     } else {
         cpu_8080.core_p().increase_pc(instr_size());
@@ -81,7 +81,7 @@ void jnc_opcode::handle_opcode(cpu &cpu_8080)
 }
 
 jz_opcode::jz_opcode()
-    : jmp_opcode("JPO")
+    : jmp_opcode("JZ")
 {}
 
 void jz_opcode::handle_opcode(cpu &cpu_8080)
@@ -120,7 +120,7 @@ void jm_opcode::handle_opcode(cpu &cpu_8080)
 }
 
 jp_opcode::jp_opcode()
-    : jmp_opcode("JO")
+    : jmp_opcode("JP")
 {}
 
 void jp_opcode::handle_opcode(cpu &cpu_8080)

@@ -2,16 +2,80 @@
 
 invaders::invaders()
     : rom_image("/home/meijemac/invaders.full"),
-      is_running(false)
+      is_running(false),
+      left_1(0),
+      left_2(0),
+      right_1(0),
+      right_2(0),
+      fire_1(0),
+      fire_2(0),
+      start_p2(0),
+      start_b(0)
+{}
+
+void invaders::left_p1_pressed()
 {
+    left_1 = 1;
+}
+
+void invaders::left_p1_released()
+{
+    left_1 = 0;
+}
+
+void invaders::right_p1_pressed()
+{
+    right_1 = 1;
+}
+
+void invaders::right_p1_released()
+{
+    right_1 = 0;
+}
+
+void invaders::fire_p1_pressed()
+{
+    fire_1 = 1;
+}
+
+void invaders::fire_p1_released()
+{
+    fire_1 = 0;
+}
+
+void invaders::left_p2_pressed()
+{
+    left_2 = 1;
+}
+
+void invaders::left_p2_released()
+{
+    left_2 = 0;
+}
+
+void invaders::right_p2_pressed()
+{
+    right_2 = 1;
+}
+
+void invaders::right_p2_released()
+{
+    right_2 = 0;
+}
+
+void invaders::fire_p2_pressed()
+{
+    fire_2 = 1;
+}
+
+void invaders::fire_p2_released()
+{
+    fire_2 = 0;
 }
 
 uint8_t invaders::get_pixel(int offset) {
     offset += 0x2400;
     return memory->get_u8(offset);
-}
-QByteArray invaders::get_screen_buffer() {
-    return memory->copy_video_memory();
 }
 
 void invaders::reset()
@@ -75,32 +139,38 @@ void invaders::screen_interrupt() {
 
     flag = (flag == 0) ? 1 : 0;
 }
+QFile myFile("/home/meijemac/log2.log");
+QFile shortFile("/home/meijemac/slog2.log");
 
 void invaders::run() {
 
        if( rom_image.open(QIODevice::ReadOnly | QIODevice::Unbuffered) == true) {
-           QFile myFile("/home/meijemac/log.log");
 
            bool flag = myFile.open(QIODevice::WriteOnly | QIODevice::Text);
+           shortFile.open(QIODevice::WriteOnly | QIODevice::Text);
 
            QByteArray arr = rom_image.readAll();
            memory = new cpu_memory(arr);
            cpu_8080 = new cpu(*memory, *this);
 
-           cpu_8080->execute(myFile);
+           cpu_8080->execute(myFile, shortFile);
        }
 }
 
-void invaders::coin_inserted() {
-    coin = 1;
+void invaders::coin_inserted(uint8_t val) {
+    coin = val;
 }
 
 void invaders:: start_p1_pressed() {
-    start_b = true;
+    start_b = 1;
 }
 
 void invaders::start_p1_released() {
-    start_b = false;
+    start_b = 0;
+}
+
+void invaders::start_p2_pressed() {
+    start_p2 = 1;
 }
 
 void invaders::start_pressed() {
@@ -109,18 +179,28 @@ void invaders::start_pressed() {
 
 uint8_t invaders::input_1_handler()
 {
-    return 0x00;
+    return 0x0E;
 }
 
 uint8_t invaders::input_2_handler()
 {
     uint8_t ret = 0x04;
     ret |= coin;
+    ret |= (start_p2 << 1);
     ret |= (start_b << 2);
+    ret |= (fire_1 << 4);
+    ret |= (left_1 << 5);
+    ret |= (right_1 << 6);
     return ret;
 }
 
 uint8_t invaders::input_3_handler()
 {
-    return 0x00;
+    uint8_t ret = 0x00;
+
+    ret |= (fire_2 << 4);
+    ret |= (left_2 << 5);
+    ret |= (right_2 << 6);
+
+    return ret;
 }
