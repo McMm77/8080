@@ -1,8 +1,8 @@
 CC=gcc
-FLAGS=-g -I/usr/include/lua5.3/
+FLAGS=-Wno-unused-function -g -I/usr/include/lua5.3/
 DEASM_FLAGS=-g -Ddgconfig_DEASSEMBLER
 DEASM_OBJ=deassembler_main.o deassembler.o
-EMMU_FLAGS=-g
+EMMU_FLAGS=-w -g 
 EMMU_OBJ=main_file.o cpu_8080.o cpu.o cpu_common.o deassembler_emu.o cli_parser.o simple_assembler.o
 
 emulator: $(EMMU_OBJ)

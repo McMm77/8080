@@ -39,9 +39,14 @@ typedef struct cpu_core {
 	
 } cpu_core_t;
 
+typedef uint8_t (*input_handler) (uint8_t);
+typedef void (*output_handler) (uint8_t, uint8_t);
+
 typedef struct cpu_model {
 	uint8_t		is_running;
 	bool		interrupt_enable;	
+	input_handler   cb_in;
+	output_handler  cb_out;
 	cpu_core_t	core;
 } cpu_model_t;	
 
