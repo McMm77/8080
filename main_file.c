@@ -33,6 +33,9 @@ static int load_rom_memory_from_file(const char* rom_file, memory_t* rom_mem)
 	}
 	
 	size_t file_size = get_file_size(pInputFile);
+
+	// The file represents the ROM, but we need additional memory for RAM.
+	file_size += (4*1024);
    
 	rom_mem->memory = (uint8_t*) malloc(file_size);
 	
@@ -153,12 +156,13 @@ static void enter_cli()
 static void enter_bin(char* rom_file)
 {
 	cpu_model_t cpu = {0};
+	cpu.is_running = true;
 	
 	if(load_rom_memory_from_file(rom_file, &rom_memory) != 0)   {
 		exit(0);
 	}
 
-	execute_cpu(&ram_memory, &rom_memory, &cpu);
+	execute_cpu_8080(&rom_memory, &cpu);
 }
 
 static void enter_step(char *rom_file)

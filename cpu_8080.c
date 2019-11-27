@@ -297,8 +297,9 @@ static opcode_instr_t opcode_table[] = {{eNOP1, "NOP", "NOP", 4, 4, 1, opcode_ha
                                         {eINRC, "INRC", "INR C", 5, 5, 1, opcode_handler_inr_c},
                                         {eDCRC, "DCRC", "DCR C", 5, 5, 1, opcode_handler_dcr_c},
                                         {eMVIC, "MVIC", "MVI C", 7, 7, 2, opcode_handler_mvi_c},
+                                        {eRRC, "RRC", "RRC", 4, 4, 1, opcode_handler_rrc},
+
                                         {eNOP2, "NOP2", "NOP", 4, 4, 1, opcode_handler_not_supported},
-                                        {eRRC, "RRC", "RR C", 4, 4, 1, opcode_handler_rrc},
                                         {eLXID, "LXID", "LXI D", 10, 10, 3, opcode_handler_lxi_d},
                                         {eSTAXD, "STAXD", "STAX D", 7, 7, 1, opcode_handler_stax_d},
                                         {eINXD, "INXD", "INX D", 5, 5, 1, opcode_handler_inx_d},
@@ -314,6 +315,7 @@ static opcode_instr_t opcode_table[] = {{eNOP1, "NOP", "NOP", 4, 4, 1, opcode_ha
                                         {eDCRE, "DCRE", "DCR E", 5, 5, 1, opcode_handler_dcr_e},
                                         {eMVIE, "MVIE", "MVI E", 7, 7, 2, opcode_handler_mvi_e},
                                         {eRAR, "RAR", "RAR", 4, 4, 1, opcode_handler_rar},
+
 					{eNOP4, "NOP4", "NOP", 4, 4, 1, opcode_handler_not_supported},
 					{eLXISP, "LXIH", "LXI H", 10, 10, 3, opcode_handler_lxi_h},
 					{eSHLD, "SHLD", "SHLD", 16, 16, 3, opcode_handler_shld},
@@ -330,6 +332,7 @@ static opcode_instr_t opcode_table[] = {{eNOP1, "NOP", "NOP", 4, 4, 1, opcode_ha
 					{eDCRL, "DCRL", "DCR L", 5, 5, 1, opcode_handler_dcr_l},
 					{eMVIL, "MVIL", "MVI L", 7, 7, 2, opcode_handler_mvi_l},
 					{eCMA, "CMA", "CMA", 4, 4, 1, opcode_handler_cma},
+
 					{eNOP6, "NOP6", "NOP", 4, 4, 1, opcode_handler_not_supported},
 					{eLXISP, "LXISP", "LXI SP", 10, 10, 3, opcode_handler_lxi_sp},
 					{eSTA, "STA", "STA", 13, 13, 3, opcode_handler_sta},
@@ -346,137 +349,156 @@ static opcode_instr_t opcode_table[] = {{eNOP1, "NOP", "NOP", 4, 4, 1, opcode_ha
 					{eDCRA, "DCRA", "DCR A", 5, 5, 1, opcode_handler_dcr_a},
 					{eMVIA, "MVIA", "MVI A", 7, 7, 2, opcode_handler_mvi_a},
 					{eCMC, "CMC", "CMC", 4, 4, 1, opcode_handler_cmc},
+
 					{eMOVBB, "MOVBB", "MOV B,B", 4, 4, 1, opcode_handler_mov_bb},
 					{eMOVBC, "MOVBC", "MOV B,C", 4, 4, 1, opcode_handler_mov_bc},
 					{eMOVBD, "MOVBD", "MOV B,D", 4, 4, 1, opcode_handler_mov_bd},
 					{eMOVBE, "MOVBE", "MOV B,E", 4, 4, 1, opcode_handler_mov_be},
 					{eMOVBH, "MOVBH", "MOV B,H", 4, 4, 1, opcode_handler_mov_bh},
 					{eMOVBL, "MOVBL", "MOV B,L", 4, 4, 1, opcode_handler_mov_bl},
-					{eMOVBM, "MOVBM", "MOV B,M", 4, 4, 1, opcode_handler_mov_bm},
+					{eMOVBM, "MOVBM", "MOV B,M", 7, 7, 1, opcode_handler_mov_bm},
 					{eMOVBA, "MOVBA", "MOV B,A", 4, 4, 1, opcode_handler_mov_ba},
+
 					{eMOVCB, "MOVCB", "MOV C,B", 4, 4, 1, opcode_handler_mov_cb},
 					{eMOVCC, "MOVCC", "MOV C,C", 4, 4, 1, opcode_handler_mov_cc},
 					{eMOVCD, "MOVCD", "MOV C,D", 4, 4, 1, opcode_handler_mov_cd},
 					{eMOVCE, "MOVCE", "MOV C,E", 4, 4, 1, opcode_handler_mov_ce},
 					{eMOVCH, "MOVCH", "MOV C,H", 4, 4, 1, opcode_handler_mov_ch},
 					{eMOVCL, "MOVCL", "MOV C,L", 4, 4, 1, opcode_handler_mov_cl},
-					{eMOVCM, "MOVCM", "MOV C,M", 4, 4, 1, opcode_handler_mov_cm},
+					{eMOVCM, "MOVCM", "MOV C,M", 7, 7, 1, opcode_handler_mov_cm},
 					{eMOVCA, "MOVCA", "MOV C,A", 4, 4, 1, opcode_handler_mov_ca},
+
 					{eMOVDB, "MOVDB", "MOV D,B", 4, 4, 1, opcode_handler_mov_db},
 					{eMOVDC, "MOVDC", "MOV D,C", 4, 4, 1, opcode_handler_mov_dc},
 					{eMOVDD, "MOVDD", "MOV D,D", 4, 4, 1, opcode_handler_mov_dd},
 					{eMOVDE, "MOVDE", "MOV D,E", 4, 4, 1, opcode_handler_mov_de},
 					{eMOVDH, "MOVDH", "MOV D,H", 4, 4, 1, opcode_handler_mov_dh},
 					{eMOVDL, "MOVDL", "MOV D,L", 4, 4, 1, opcode_handler_mov_dl},
-					{eMOVDM, "MOVDM", "MOV D,M", 4, 4, 1, opcode_handler_mov_dm},
+					{eMOVDM, "MOVDM", "MOV D,M", 7, 7, 1, opcode_handler_mov_dm},
 					{eMOVDA, "MOVDA", "MOV D,A", 4, 4, 1, opcode_handler_mov_da},
+
 					{eMOVEB, "MOVEB", "MOV E,B", 4, 4, 1, opcode_handler_mov_eb},
 					{eMOVEC, "MOVEC", "MOV E,C", 4, 4, 1, opcode_handler_mov_ec},
 					{eMOVED, "MOVED", "MOV E,D", 4, 4, 1, opcode_handler_mov_ed},
 					{eMOVEE, "MOVEE", "MOV E,E", 4, 4, 1, opcode_handler_mov_ee},
 					{eMOVEH, "MOVEH", "MOV E,H", 4, 4, 1, opcode_handler_mov_eh},
 					{eMOVEL, "MOVEL", "MOV E,L", 4, 4, 1, opcode_handler_mov_el},
-					{eMOVEM, "MOVEM", "MOV E,M", 4, 4, 1, opcode_handler_mov_em},
+					{eMOVEM, "MOVEM", "MOV E,M", 7, 7, 1, opcode_handler_mov_em},
 					{eMOVEA, "MOVEA", "MOV E,A", 4, 4, 1, opcode_handler_mov_ea},
+
 					{eMOVHB, "MOVHB", "MOV H,B", 4, 4, 1, opcode_handler_mov_hb},
 					{eMOVHC, "MOVHC", "MOV H,C", 4, 4, 1, opcode_handler_mov_hc},
 					{eMOVHD, "MOVHD", "MOV H,D", 4, 4, 1, opcode_handler_mov_hd},
 					{eMOVHE, "MOVHE", "MOV H,E", 4, 4, 1, opcode_handler_mov_he},
 					{eMOVHH, "MOVHH", "MOV H,H", 4, 4, 1, opcode_handler_mov_hh},
 					{eMOVHL, "MOVHL", "MOV H,L", 4, 4, 1, opcode_handler_mov_hl},
-					{eMOVHM, "MOVHM", "MOV H,M", 4, 4, 1, opcode_handler_mov_hm},
+					{eMOVHM, "MOVHM", "MOV H,M", 7, 7, 1, opcode_handler_mov_hm},
 					{eMOVHA, "MOVHA", "MOV H,A", 4, 4, 1, opcode_handler_mov_ha},
+
 					{eMOVLB, "MOVLB", "MOV L,B", 4, 4, 1, opcode_handler_mov_lb},
 					{eMOVLC, "MOVLC", "MOV L,C", 4, 4, 1, opcode_handler_mov_lc},
 					{eMOVLD, "MOVLD", "MOV L,D", 4, 4, 1, opcode_handler_mov_ld},
 					{eMOVLE, "MOVLE", "MOV L,E", 4, 4, 1, opcode_handler_mov_le},
 					{eMOVLH, "MOVLH", "MOV L,H", 4, 4, 1, opcode_handler_mov_lh},
 					{eMOVLL, "MOVLL", "MOV L,L", 4, 4, 1, opcode_handler_mov_ll},
-					{eMOVLM, "MOVLM", "MOV L,M", 4, 4, 1, opcode_handler_mov_lm},
+					{eMOVLM, "MOVLM", "MOV L,M", 7, 7, 1, opcode_handler_mov_lm},
 					{eMOVLA, "MOVLA", "MOV L,A", 4, 4, 1, opcode_handler_mov_la},
-					{eMOVMB, "MOVMB", "MOV M,B", 4, 4, 1, opcode_handler_mov_mb},
-					{eMOVMC, "MOVMC", "MOV M,C", 4, 4, 1, opcode_handler_mov_mc},
-					{eMOVMD, "MOVMD", "MOV M,D", 4, 4, 1, opcode_handler_mov_md},
-					{eMOVME, "MOVME", "MOV M,E", 4, 4, 1, opcode_handler_mov_me},
-					{eMOVMH, "MOVMH", "MOV M,H", 4, 4, 1, opcode_handler_mov_mh},
-					{eMOVML, "MOVML", "MOV M,L", 4, 4, 1, opcode_handler_mov_ml},
-					{eHLT,   "HLT",    "HLT",    4, 4, 1, opcode_handler_hlt},
-					{eMOVMA, "MOVMA", "MOV M,A", 4, 4, 1, opcode_handler_mov_ma},
+
+					{eMOVMB, "MOVMB", "MOV M,B", 7, 7, 1, opcode_handler_mov_mb},
+					{eMOVMC, "MOVMC", "MOV M,C", 7, 7, 1, opcode_handler_mov_mc},
+					{eMOVMD, "MOVMD", "MOV M,D", 7, 7, 1, opcode_handler_mov_md},
+					{eMOVME, "MOVME", "MOV M,E", 7, 7, 1, opcode_handler_mov_me},
+					{eMOVMH, "MOVMH", "MOV M,H", 7, 7, 1, opcode_handler_mov_mh},
+					{eMOVML, "MOVML", "MOV M,L", 7, 7, 1, opcode_handler_mov_ml},
+					{eHLT,   "HLT",    "HLT",    7, 7, 1, opcode_handler_hlt},
+					{eMOVMA, "MOVMA", "MOV M,A", 7, 7, 1, opcode_handler_mov_ma},
+
 					{eMOVAB, "MOVAB", "MOV A,B", 4, 4, 1, opcode_handler_mov_ab},
 					{eMOVAC, "MOVAC", "MOV A,C", 4, 4, 1, opcode_handler_mov_ac},
 					{eMOVAD, "MOVAD", "MOV A,D", 4, 4, 1, opcode_handler_mov_ad},
 					{eMOVAE, "MOVAE", "MOV A,E", 4, 4, 1, opcode_handler_mov_ae},
 					{eMOVAH, "MOVAH", "MOV A,H", 4, 4, 1, opcode_handler_mov_ah},
 					{eMOVAL, "MOVAL", "MOV A,L", 4, 4, 1, opcode_handler_mov_al},
-					{eMOVAM, "MOVAM", "MOV A,M", 4, 4, 1, opcode_handler_mov_am},
+					{eMOVAM, "MOVAM", "MOV A,M", 7, 7, 1, opcode_handler_mov_am},
 					{eMOVAA, "MOVAA", "MOV A,A", 4, 4, 1, opcode_handler_mov_aa},
+
 					{eADDB, "ADDB", "ADD B", 4, 4, 1, opcode_handler_add_b},
 					{eADDC, "ADDC", "ADD C", 4, 4, 1, opcode_handler_add_c},
 					{eADDD, "ADDD", "ADD D", 4, 4, 1, opcode_handler_add_d},
 					{eADDE, "ADDE", "ADD E", 4, 4, 1, opcode_handler_add_e},
 					{eADDH, "ADDH", "ADD H", 4, 4, 1, opcode_handler_add_h},
 					{eADDL, "ADDL", "ADD L", 4, 4, 1, opcode_handler_add_l},
-					{eADDM, "ADDM", "ADD M", 4, 4, 1, opcode_handler_add_m},
+					{eADDM, "ADDM", "ADD M", 7, 7, 1, opcode_handler_add_m},
 					{eADDA, "ADDA", "ADD A", 4, 4, 1, opcode_handler_add_a},
+
 					{eADCB, "ADCB", "ADC B", 4, 4, 1, opcode_handler_adc_b},
 					{eADCC, "ADCC", "ADC C", 4, 4, 1, opcode_handler_adc_c},
 					{eADCD, "ADCD", "ADC D", 4, 4, 1, opcode_handler_adc_d},
 					{eADCE, "ADCE", "ADC E", 4, 4, 1, opcode_handler_adc_e},
 					{eADCH, "ADCH", "ADC H", 4, 4, 1, opcode_handler_adc_h},
 					{eADCL, "ADCL", "ADC L", 4, 4, 1, opcode_handler_adc_l},
-					{eADCM, "ADCM", "ADC M", 4, 4, 1, opcode_handler_adc_m},
+					{eADCM, "ADCM", "ADC M", 7, 7, 1, opcode_handler_adc_m},
 					{eADCA, "ADCA", "ADC A", 4, 4, 1, opcode_handler_adc_a},
+
 					{eSUBB, "SUBB", "SUB B", 4, 4, 1, opcode_handler_sub_b},					
 					{eSUBC, "SUBC", "SUB C", 4, 4, 1, opcode_handler_sub_c},					
 					{eSUBD, "SUBD", "SUB D", 4, 4, 1, opcode_handler_sub_d},					
 					{eSUBE, "SUBE", "SUB E", 4, 4, 1, opcode_handler_sub_e},					
 					{eSUBH, "SUBH", "SUB H", 4, 4, 1, opcode_handler_sub_h},					
 					{eSUBL, "SUBL", "SUB L", 4, 4, 1, opcode_handler_sub_l},					
-					{eSUBM, "SUBM", "SUB M", 4, 4, 1, opcode_handler_sub_m},					
-					{eSUBA, "SUBA", "SUB A", 4, 4, 1, opcode_handler_sub_a},					
+					{eSUBM, "SUBM", "SUB M", 7, 7, 1, opcode_handler_sub_m},
+					{eSUBA, "SUBA", "SUB A", 4, 4, 1, opcode_handler_sub_a},
+
 					{eSBBB, "SBBB", "SBB B", 4, 4, 1, opcode_handler_sbb_b},					
 					{eSBBC, "SBBC", "SBB C", 4, 4, 1, opcode_handler_sbb_c},					
 					{eSBBD, "SBBD", "SBB D", 4, 4, 1, opcode_handler_sbb_d},					
 					{eSBBE, "SBBE", "SBB E", 4, 4, 1, opcode_handler_sbb_e},					
 					{eSBBH, "SBBH", "SBB H", 4, 4, 1, opcode_handler_sbb_h},					
 					{eSBBL, "SBBL", "SBB L", 4, 4, 1, opcode_handler_sbb_l},					
-					{eSBBM, "SBBM", "SBB M", 4, 4, 1, opcode_handler_sbb_m},					
-					{eSBBA, "SBBA", "SBB A", 4, 4, 1, opcode_handler_sbb_a},					
+					{eSBBM, "SBBM", "SBB M", 7, 7, 1, opcode_handler_sbb_m},					
+					{eSBBA, "SBBA", "SBB A", 4, 4, 1, opcode_handler_sbb_a},
+					
 					{eANAB, "ANAB", "ANA B", 4, 4, 1, opcode_handler_ana_b},					
 					{eANAC, "ANAC", "ANA C", 4, 4, 1, opcode_handler_ana_c},					
 					{eANAD, "ANAD", "ANA D", 4, 4, 1, opcode_handler_ana_d},					
 					{eANAE, "ANAE", "ANA E", 4, 4, 1, opcode_handler_ana_e},					
 					{eANAH, "ANAH", "ANA H", 4, 4, 1, opcode_handler_ana_h},					
 					{eANAL, "ANAL", "ANA L", 4, 4, 1, opcode_handler_ana_l},					
-					{eANAM, "ANAM", "ANA M", 4, 4, 1, opcode_handler_ana_m},					
-					{eANAA, "ANAA", "ANA A", 4, 4, 1, opcode_handler_ana_a},					
+					{eANAM, "ANAM", "ANA M", 7, 7, 1, opcode_handler_ana_m},					
+					{eANAA, "ANAA", "ANA A", 4, 4, 1, opcode_handler_ana_a},
+					
 					{eXRAB, "XRAB", "XRA B", 4, 4, 1, opcode_handler_xra_b},					
 					{eXRAC, "XRAC", "XRA C", 4, 4, 1, opcode_handler_xra_c},					
 					{eXRAD, "XRAD", "XRA D", 4, 4, 1, opcode_handler_xra_d},					
 					{eXRAE, "XRAE", "XRA E", 4, 4, 1, opcode_handler_xra_e},					
 					{eXRAH, "XRAH", "XRA H", 4, 4, 1, opcode_handler_xra_h},					
 					{eXRAL, "XRAL", "XRA L", 4, 4, 1, opcode_handler_xra_l},					
-					{eXRAM, "XRAM", "XRA M", 4, 4, 1, opcode_handler_xra_m},					
-					{eXRAA, "XRAA", "XRA A", 4, 4, 1, opcode_handler_xra_a},					
+					{eXRAM, "XRAM", "XRA M", 7, 7, 1, opcode_handler_xra_m},					
+					{eXRAA, "XRAA", "XRA A", 4, 4, 1, opcode_handler_xra_a},
+					
 					{eORAB, "ORAB", "ORA B", 4, 4, 1, opcode_handler_ora_b},					
 					{eORAC, "ORAC", "ORA C", 4, 4, 1, opcode_handler_ora_c},					
 					{eORAD, "ORAD", "ORA D", 4, 4, 1, opcode_handler_ora_d},					
 					{eORAE, "ORAE", "ORA E", 4, 4, 1, opcode_handler_ora_e},					
 					{eORAH, "ORAH", "ORA H", 4, 4, 1, opcode_handler_ora_h},					
 					{eORAL, "ORAL", "ORA L", 4, 4, 1, opcode_handler_ora_l},					
-					{eORAM, "ORAM", "ORA M", 4, 4, 1, opcode_handler_ora_m},					
-					{eORAA, "ORAA", "ORA A", 4, 4, 1, opcode_handler_ora_a},					
+					{eORAM, "ORAM", "ORA M", 7, 7, 1, opcode_handler_ora_m},					
+					{eORAA, "ORAA", "ORA A", 4, 4, 1, opcode_handler_ora_a},
+
+					{eCMPB, "CMPB", "CMP B", 4, 4, 1, opcode_handler_cmp_b},					
+					{eCMPC, "CMPC", "CMP C", 4, 4, 1, opcode_handler_cmp_c},					
 					{eCMPD, "CMPD", "CMP D", 4, 4, 1, opcode_handler_cmp_d},					
 					{eCMPE, "CMPE", "CMP E", 4, 4, 1, opcode_handler_cmp_e},					
 					{eCMPH, "CMPH", "CMP H", 4, 4, 1, opcode_handler_cmp_h},					
 					{eCMPL, "CMPL", "CMP L", 4, 4, 1, opcode_handler_cmp_l},					
-					{eCMPM, "CMPM", "CMP M", 4, 4, 1, opcode_handler_cmp_m},					
-					{eCMPA, "CMPA", "CMP A", 4, 4, 1, opcode_handler_cmp_a},					
+					{eCMPM, "CMPM", "CMP M", 7, 7, 1, opcode_handler_cmp_m},					
+					{eCMPA, "CMPA", "CMP A", 4, 4, 1, opcode_handler_cmp_a},
+
 					{eRNZ, "RNZ", "RNZ", 5, 11, 1, opcode_handler_rnz},
 					{ePOPB, "POPB", "POP B", 10, 10, 1, opcode_handler_pop_b},
 					{eJNZ, "JNZ", "JNZ", 10, 10, 3, opcode_handler_jnz},
 					{eJMP, "JMP", "JMP", 10, 10, 3, opcode_handler_jmp},
-					{eCNZ, "CNZ", "CNZ", 11, 11, 1, opcode_handler_cnz},
+					{eCNZ, "CNZ", "CNZ", 11, 17, 3, opcode_handler_cnz},
 					{ePUSHB, "PUSHB", "PUSH B", 11, 11, 1, opcode_handler_push_b},
 					{eADI, "ADI", "ADI", 7, 7, 2, opcode_handler_adi},
 					{eRST_0, "RST0", "RST 0", 11, 11, 1, opcode_handler_rst0},
@@ -484,10 +506,11 @@ static opcode_instr_t opcode_table[] = {{eNOP1, "NOP", "NOP", 4, 4, 1, opcode_ha
 					{eRET, "RET", "RET", 10, 10, 1, opcode_handler_ret},
 					{eJZ, "JZ", "JZ", 10, 10, 3, opcode_handler_jz},
 					{eJMP, "JMP", "JMP", 10, 10, 3, opcode_handler_not_supported},
-					{eCZ, "CZ", "CZ", 17, 17, 3, opcode_handler_cz},
+					{eCZ, "CZ", "CZ", 11, 17, 3, opcode_handler_cz},
 					{eCALL, "CALL", "CALL", 17, 17, 3, opcode_handler_call},
 					{eACI, "ACI", "ACI", 7, 7, 2, opcode_handler_aci},
 					{eRST_1, "RST1", "RST1", 11, 11, 1, opcode_handler_rst1},
+
 					{eRNC, "RNC", "RNC", 5, 11, 1, opcode_handler_rnc},
 					{ePOPD, "POPD", "POPD", 10, 10, 1, opcode_handler_pop_d},
 					{eJNC, "JNC", "JNC", 10, 10, 3, opcode_handler_jnc},
@@ -504,6 +527,7 @@ static opcode_instr_t opcode_table[] = {{eNOP1, "NOP", "NOP", 4, 4, 1, opcode_ha
 					{eCALL1, "CALL1", "CALL", 17, 17, 3, opcode_handler_not_supported},
 					{eSBI, "SBI", "SBI", 7, 7, 2, opcode_handler_sbi},
 					{eRST_3, "RST3", "RST3", 11, 11, 1, opcode_handler_rst3},
+
 					{eRPO, "RPO", "RPO", 5, 11, 1, opcode_handler_rpo},
 					{ePOPH, "POPH", "POP H", 10, 10, 1, opcode_handler_pop_h},
 					{eJPO, "JPO", "JPO", 10, 10, 3, opcode_handler_jpo},
@@ -520,6 +544,7 @@ static opcode_instr_t opcode_table[] = {{eNOP1, "NOP", "NOP", 4, 4, 1, opcode_ha
 					{eCALL2, "CALL2", "CALL", 17, 17, 3, opcode_handler_not_supported},
 					{eXRI, "XRI", "XRI", 7, 7, 2, opcode_handler_xri},
 					{eRST_5, "RST5", "RST5", 11, 11, 1, opcode_handler_rst5},
+
 					{eRP, "RP", "RP", 5, 11, 1, opcode_handler_rp},
 					{ePOPPSW, "POPPSW", "POP PSW", 10, 10, 1, opcode_handler_pop_psw},
 					{eJP, "JP", "JP", 10, 10, 3, opcode_handler_jp},
@@ -554,11 +579,11 @@ static void set_p_flag(cpu_model_t* cpu, uint8_t val)
 {
 	uint8_t cnt = 0;
 	for(int i = 0 ; i < 8 ; i++) {
-		uint8_t bit = ((val >> 1) & 0x01);
+		uint8_t bit = ((val >> i) & 0x01);
 		cnt += (bit == 1) ? 1 : 0;
 	}
 
-	cpu->core.status.bits.p = (cnt & 0x01) ? 1 : 0; 
+	cpu->core.status.bits.p = (cnt & 0x01) ? 0 : 1; 
 }
 
 static void set_z_flag(cpu_model_t* cpu, uint8_t val)
@@ -639,10 +664,12 @@ static void add_instr(cpu_model_t *cpu, uint8_t val)
 
 static void adc_instr(cpu_model_t *cpu, uint8_t val)
 {
-	set_c_flag(cpu, cpu->core.a, val);
-	set_ac_flag(cpu, cpu->core.a, val);
+	uint8_t cbit = cpu->core.status.bits.c;
 
-	cpu->core.a += (val + cpu->core.status.bits.c);
+	set_c_flag(cpu, cpu->core.a, (val + cbit));
+	set_ac_flag(cpu, cpu->core.a, (val + cbit));
+
+	cpu->core.a += (val + cbit);
 
 	set_p_flag(cpu, cpu->core.a);
 	set_z_flag(cpu, cpu->core.a);
@@ -997,10 +1024,10 @@ static uint8_t opcode_handler_dad_b(opcode_instr_t *opcode, memory_t *mem, cpu_m
 
 	uint32_t prod = hl_val + bc_val;
 
-	cpu->core.status.bits.c = (prod & 0x00010000);
+	cpu->core.status.bits.c = ((prod & 0x00010000) != 0);
 
 	cpu->core.h = (uint8_t) ((prod >> 8) & 0xFF);
-	cpu->core.l = (uint8_t) ((prod >> 8) & 0xFF);
+	cpu->core.l = (uint8_t) (prod & 0xFF);
 
 	cpu->core.pc += opcode->opcode_size;
 
@@ -1015,10 +1042,10 @@ static uint8_t opcode_handler_dad_d(opcode_instr_t *opcode, memory_t *mem, cpu_m
 
 	uint32_t prod = hl_val + de_val;
 
-	cpu->core.status.bits.c = (prod & 0x00010000);
+	cpu->core.status.bits.c = ((prod & 0x00010000) != 0);
 
 	cpu->core.h = (uint8_t) ((prod >> 8) & 0xFF);
-	cpu->core.l = (uint8_t) ((prod >> 8) & 0xFF);
+	cpu->core.l = (uint8_t) (prod & 0xFF);
 
 	cpu->core.pc += opcode->opcode_size;
 
@@ -1030,10 +1057,10 @@ static uint8_t opcode_handler_dad_h(opcode_instr_t *opcode, memory_t *mem, cpu_m
 	uint16_t hl_val = (cpu->core.h << 8) | cpu->core.l;
 	uint32_t prod = hl_val << 1;
 
-	cpu->core.status.bits.c = (prod & 0x00010000);
+	cpu->core.status.bits.c = ((prod & 0x00010000) != 0);
 
 	cpu->core.h = (uint8_t) ((prod >> 8) & 0xFF);
-	cpu->core.l = (uint8_t) ((prod >> 8) & 0xFF);
+	cpu->core.l = (uint8_t) (prod & 0xFF);
 
 	cpu->core.pc += opcode->opcode_size;
 
@@ -1046,10 +1073,10 @@ static uint8_t opcode_handler_dad_sp(opcode_instr_t *opcode, memory_t *mem, cpu_
 
 	uint32_t prod = hl_val + cpu->core.stack;
 
-	cpu->core.status.bits.c = (prod & 0x00010000);
+	cpu->core.status.bits.c = ((prod & 0x00010000) != 0);
 
 	cpu->core.h = (uint8_t) ((prod >> 8) & 0xFF);
-	cpu->core.l = (uint8_t) ((prod >> 8) & 0xFF);
+	cpu->core.l = (uint8_t) (prod & 0xFF);
 
 	cpu->core.pc += opcode->opcode_size;
 
@@ -1072,7 +1099,7 @@ static void dcx_instr(uint8_t *hbit, uint8_t *lbit)
 	dcx_reg--;
 
 	*hbit = (uint8_t) (dcx_reg >> 8) & 0xFF;
-	*lbit = (uint8_t) (dcx_reg && 0xFF);
+	*lbit = (uint8_t) (dcx_reg & 0xFF);
 }
 
 static uint8_t opcode_handler_dcx_b(opcode_instr_t *opcode, memory_t *mem, cpu_model_t *cpu)
@@ -1095,7 +1122,7 @@ static uint8_t opcode_handler_dcx_d(opcode_instr_t *opcode, memory_t *mem, cpu_m
 
 static uint8_t opcode_handler_dcx_h(opcode_instr_t *opcode, memory_t *mem, cpu_model_t *cpu)
 {
-	dcx_instr(&(cpu->core.l), &(cpu->core.l));
+	dcx_instr(&(cpu->core.h), &(cpu->core.l));
 
 	cpu->core.pc += opcode->opcode_size;
 
@@ -1118,7 +1145,7 @@ static void inx_instr(uint8_t *hbit, uint8_t *lbit)
 	inx_reg++;
 
 	*hbit = (uint8_t) (inx_reg >> 8) & 0xFF;
-	*lbit = (uint8_t) (inx_reg && 0xFF);
+	*lbit = (uint8_t) (inx_reg & 0xFF);
 }
 
 static uint8_t opcode_handler_inx_b(opcode_instr_t *opcode, memory_t *mem, cpu_model_t *cpu)
@@ -1160,10 +1187,11 @@ static uint8_t opcode_handler_inx_sp(opcode_instr_t *opcode, memory_t *mem, cpu_
 static void inr_instr(cpu_model_t* cpu, uint8_t *val)
 {
 	uint8_t temp_val = *val;
-	set_c_flag(cpu, val, temp_val);
-	set_ac_flag(cpu, val, temp_val);
 
 	(*val)++;
+
+	set_c_flag(cpu, val, temp_val);
+	set_ac_flag(cpu, val, temp_val);
 
 	set_p_flag(cpu, val);
 	set_z_flag(cpu, val);
@@ -1181,7 +1209,7 @@ static uint8_t opcode_handler_inr_b(opcode_instr_t *opcode, memory_t *mem, cpu_m
 
 static uint8_t opcode_handler_inr_c(opcode_instr_t *opcode, memory_t *mem, cpu_model_t *cpu)
 {
-	inr_instr(cpu, &cpu->core.b);
+	inr_instr(cpu, &cpu->core.c);
 
 	cpu->core.pc += opcode->opcode_size;
 
@@ -1190,7 +1218,7 @@ static uint8_t opcode_handler_inr_c(opcode_instr_t *opcode, memory_t *mem, cpu_m
 
 static uint8_t opcode_handler_inr_d(opcode_instr_t *opcode, memory_t *mem, cpu_model_t *cpu)
 {
-	inr_instr(cpu, &cpu->core.b);
+	inr_instr(cpu, &cpu->core.d);
 
 	cpu->core.pc += opcode->opcode_size;
 
@@ -1199,7 +1227,7 @@ static uint8_t opcode_handler_inr_d(opcode_instr_t *opcode, memory_t *mem, cpu_m
 
 static uint8_t opcode_handler_inr_e(opcode_instr_t *opcode, memory_t *mem, cpu_model_t *cpu)
 {
-	inr_instr(cpu, &cpu->core.b);
+	inr_instr(cpu, &cpu->core.e);
 
 	cpu->core.pc += opcode->opcode_size;
 
@@ -1208,7 +1236,7 @@ static uint8_t opcode_handler_inr_e(opcode_instr_t *opcode, memory_t *mem, cpu_m
 
 static uint8_t opcode_handler_inr_h(opcode_instr_t *opcode, memory_t *mem, cpu_model_t *cpu)
 {
-	inr_instr(cpu, &cpu->core.b);
+	inr_instr(cpu, &cpu->core.h);
 
 	cpu->core.pc += opcode->opcode_size;
 
@@ -1217,7 +1245,7 @@ static uint8_t opcode_handler_inr_h(opcode_instr_t *opcode, memory_t *mem, cpu_m
 
 static uint8_t opcode_handler_inr_l(opcode_instr_t *opcode, memory_t *mem, cpu_model_t *cpu)
 {
-	inr_instr(cpu, &cpu->core.b);
+	inr_instr(cpu, &cpu->core.l);
 
 	cpu->core.pc += opcode->opcode_size;
 
@@ -1226,7 +1254,7 @@ static uint8_t opcode_handler_inr_l(opcode_instr_t *opcode, memory_t *mem, cpu_m
 
 static uint8_t opcode_handler_inr_a(opcode_instr_t *opcode, memory_t *mem, cpu_model_t *cpu)
 {
-	inr_instr(cpu, &cpu->core.b);
+	inr_instr(cpu, &cpu->core.a);
 
 	cpu->core.pc += opcode->opcode_size;
 
@@ -1235,13 +1263,14 @@ static uint8_t opcode_handler_inr_a(opcode_instr_t *opcode, memory_t *mem, cpu_m
 
 static uint8_t opcode_handler_inr_m(opcode_instr_t *opcode, memory_t *mem, cpu_model_t *cpu)
 {
-	uint16_t addr = (cpu->core.b << 8) | cpu->core.a;
-
+	uint16_t addr = (cpu->core.h << 8) | cpu->core.l;
 	uint8_t mem_val = retrieve_u8_from_mem(addr, mem);
 
-	mem_val++;
+	inr_instr(cpu, &mem_val);
 
 	store_u8_into_mem(addr, mem_val, mem);
+
+	cpu->core.pc += opcode->opcode_size;
 
 	return 0;
 }
@@ -1250,10 +1279,10 @@ static void dcr_instr(cpu_model_t* cpu, uint8_t *val)
 {
 	uint8_t temp_val = *val;
 
+	(*val)--;
+
 	set_c_flag(cpu, val, temp_val);
 	set_ac_flag(cpu, val, temp_val);
-
-	(*val)++;
 
 	set_p_flag(cpu, val);
 	set_z_flag(cpu, val);
@@ -1404,7 +1433,7 @@ static uint8_t opcode_handler_rrc(opcode_instr_t *opcode, memory_t *mem, cpu_mod
 
 static uint8_t opcode_handler_cmc(opcode_instr_t *opcode, memory_t *mem, cpu_model_t *cpu)
 {
-	cpu->core.status.bits.c = (cpu->core.status.bits.c != 0) ? 1 : 0;
+	cpu->core.status.bits.c = (cpu->core.status.bits.c == 0) ? 1 : 0;
 
 	cpu->core.pc += opcode->opcode_size;
 
@@ -1889,7 +1918,7 @@ static uint8_t opcode_handler_mov_ma(opcode_instr_t *opcode, memory_t *mem, cpu_
 {
 	uint16_t addr = (cpu->core.h << 8) | cpu->core.l;
 
-	cpu->core.m = cpu->core.a;
+	mem->memory[addr] = cpu->core.a;
 	cpu->core.pc += opcode->opcode_size;
 
 	return 0;
@@ -1979,7 +2008,7 @@ static uint8_t opcode_handler_add_c(opcode_instr_t *opcode, memory_t *mem, cpu_m
 
 static uint8_t opcode_handler_add_d(opcode_instr_t *opcode, memory_t *mem, cpu_model_t *cpu)
 {
-	add_instr(cpu, cpu->core.c);
+	add_instr(cpu, cpu->core.d);
 	cpu->core.pc += opcode->opcode_size;
 
 	return 0;
@@ -2222,7 +2251,7 @@ static uint8_t opcode_handler_sbb_m(opcode_instr_t *opcode, memory_t *mem, cpu_m
 
 static uint8_t opcode_handler_sbb_a(opcode_instr_t *opcode, memory_t *mem, cpu_model_t *cpu)
 {
-	ana_instr(cpu, cpu->core.a);
+	sbb_instr(cpu, cpu->core.a);
 	cpu->core.pc += opcode->opcode_size;
 
 	return 0;
@@ -2447,7 +2476,7 @@ static uint8_t opcode_handler_cmp_c(opcode_instr_t *opcode, memory_t *mem, cpu_m
 
 static uint8_t opcode_handler_cmp_d(opcode_instr_t *opcode, memory_t *mem, cpu_model_t *cpu)
 {
-	cmp_instr(cpu, cpu->core.b);
+	cmp_instr(cpu, cpu->core.d);
 	cpu->core.pc += opcode->opcode_size;
 
 	return 0;
@@ -2798,7 +2827,7 @@ static uint8_t opcode_handler_call(opcode_instr_t *opcode, memory_t *mem, cpu_mo
 
 	push_u16_to_stack(pc_store, mem, cpu);
 
-	cpu->core.pc += pc_counter;
+	cpu->core.pc = pc_counter;
 	return 0;
 }
 
@@ -2999,6 +3028,8 @@ static uint8_t opcode_handler_lda(opcode_instr_t *opcode, memory_t *mem, cpu_mod
 	uint16_t addr = retrieve_u16_from_mem(cpu->core.pc+1, mem);
 	cpu->core.a = retrieve_u8_from_mem(addr, mem);
 
+	cpu->core.pc += opcode->opcode_size;
+
 	return 0;
 }
 
@@ -3018,7 +3049,7 @@ static uint8_t opcode_handler_lhld(opcode_instr_t *opcode, memory_t *mem, cpu_mo
 	uint16_t addr = retrieve_u16_from_mem(cpu->core.pc+1, mem);
 
 	cpu->core.l = retrieve_u8_from_mem(addr, mem);
-	cpu->core.h = retrieve_u8_from_mem(addr, mem);
+	cpu->core.h = retrieve_u8_from_mem(addr+1, mem);
 
 	cpu->core.pc += opcode->opcode_size;
 
@@ -3105,3 +3136,53 @@ static uint8_t opcode_handler_in(opcode_instr_t *opcode, memory_t *mem, cpu_mode
 	return 0;
 }
 
+void display_curr_cpu_8080_status(memory_t *mem, opcode_instr_t* opcode, cpu_core_t* core)
+{
+	printf("\n--------------------------");
+	printf("------ CPU STATUS --------\n");
+	printf("%s", opcode->ass_cmd);
+	
+	if (opcode->opcode_size == 2) {
+		uint8_t val8 = retrieve_u8_from_mem(core->pc+1, mem);
+		printf("\t0x%x", val8);
+	}
+
+	if (opcode->opcode_size == 3) {
+		uint16_t val16 = retrieve_u16_from_mem(core->pc+1, mem);
+		printf("\t0x%x", val16);
+	}
+
+	printf("\n\n");
+
+	printf("PC: %d\t 0x%04x\n", core->pc, core->pc);
+	printf("Stack: 0x%04x\n", core->stack);
+	printf("Reg B: 0x%02x\t\tReg C 0x%02x\n", core->b, core->c);
+	printf("Reg D: 0x%02x\t\tReg E 0x%02x\n", core->d, core->e);
+	printf("Reg H: 0x%02x\t\tReg L 0x%02x\n", core->h, core->l);
+	printf("Reg A: 0x%02x\t\tReg M 0x%02x\n", core->a, core->m);
+	printf("Status: C: %d P: %d AC: %d z: %d s: %d\n", core->status.bits.c,
+							   core->status.bits.p,
+							   core->status.bits.ac,
+							   core->status.bits.z,
+							   core->status.bits.s);
+        printf("----------------------------\n");	
+}
+
+void execute_cpu_8080(memory_t *mem, cpu_model_t *cpu_8080)   {
+
+	while(mem->memory_size > cpu_8080->core.pc) {
+		if(cpu_8080->is_running == 1) {
+			uint8_t opcode = mem->memory[cpu_8080->core.pc];
+/*
+			for(uint8_t index = 0x00 ; index <= 0xFF ; index++)   {
+				printf("%d): 0x%x) %s\n", index, index, opcode_table[index].ass_cmd);
+			}
+*/
+
+
+			display_curr_cpu_8080_status(mem, &opcode_table[opcode], &cpu_8080->core);
+
+			opcode_table[opcode].func(&opcode_table[opcode], mem, cpu_8080);
+		}
+	}
+}

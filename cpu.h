@@ -50,6 +50,8 @@ typedef struct cpu_model {
 	cpu_core_t	core;
 } cpu_model_t;	
 
+void execute_cpu_8080(memory_t*, cpu_model_t*);
+
 void execute_interrupt_opcode_cmd(memory_t *ram, memory_t* cmd, cpu_model_t* cpu_8080);
 
 /* ---------------------------------------
